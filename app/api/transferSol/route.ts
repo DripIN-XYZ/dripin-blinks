@@ -25,8 +25,8 @@ export async function GET(request: Request) {
         links: {
             actions: [
                 {
-                    label: "Transfer 0.01 SOL",
-                    href: `${url.href}?amount=0.01`,
+                    label: "Transfer 0.001 SOL",
+                    href: `${url.href}?amount=0.001`,
                 },
             ],
         },
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
     const url = new URL(request.url);
 
-    const amount = Number(url.searchParams.get("amount")) || 0.01;
+    const amount = Number(url.searchParams.get("amount")) || 0.001;
 
     let sender;
 
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         );
     }
 
-    const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+    const connection = new Connection(clusterApiUrl("mainnet-beta"), "confirmed");
 
     const transaction = new Transaction().add(
         SystemProgram.transfer({
