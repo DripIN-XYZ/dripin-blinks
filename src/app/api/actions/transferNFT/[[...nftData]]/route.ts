@@ -27,7 +27,7 @@ export async function GET(request: Request) {
         });
 
         const payload: ActionGetResponse = {
-            icon: `${response.content?.links?.image}`,
+            icon: `https://image-cdn.solana.fm/images/?imageUrl=${response.content?.links?.image}`,
             title: `${response.content?.metadata?.name}`,
             description: `${response.content?.metadata?.description}`,
             label: `Transfer NFT ${response.id}`,
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
                 actions: [
                     {
                         label: "Transfer",
-                        href: `${url}`,
+                        href: `${url.href}`,
                     },
                 ],
             },
