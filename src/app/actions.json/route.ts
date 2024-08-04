@@ -10,7 +10,7 @@ export const GET = async () => {
         ],
     };
 
-    return Response.json(payload, {
+    return new Response(JSON.stringify(payload), {
         headers: ACTIONS_CORS_HEADERS,
     });
 };
