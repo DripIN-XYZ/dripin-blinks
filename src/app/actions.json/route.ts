@@ -4,17 +4,13 @@ export const GET = async () => {
     const payload: ActionsJson = {
         rules: [
             {
-                pathPattern: "/*",
-                apiPath: "/api/actions/*",
-            },
-            {
-                pathPattern: "/api/actions/**",
-                apiPath: "/api/actions/**",
+                pathPattern: "/",
+                apiPath: "/api/transferSol/",
             },
         ],
     };
 
-    return Response.json(payload, {
+    return new Response(JSON.stringify(payload), {
         headers: ACTIONS_CORS_HEADERS,
     });
 };
