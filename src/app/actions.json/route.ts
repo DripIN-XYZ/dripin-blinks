@@ -9,7 +9,7 @@ export const GET = async () => {
             },
             {
                 pathPattern: "/",
-                apiPath: "/api/actions/**",
+                apiPath: "/api/transferNFT/**",
             },
         ],
     };
