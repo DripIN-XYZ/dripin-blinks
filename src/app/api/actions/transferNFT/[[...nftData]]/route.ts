@@ -1,8 +1,8 @@
 import { Helius } from "helius-sdk";
 import type { DAS } from "helius-sdk";
-import { createAssociatedTokenAccountInstruction, createTransferCheckedInstruction, getAssociatedTokenAddress } from "@solana/spl-token";
-import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction, clusterApiUrl } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction, clusterApiUrl, SystemProgram } from "@solana/web3.js";
 import { ACTIONS_CORS_HEADERS, ActionGetResponse, ActionPostRequest, ActionPostResponse, createPostResponse } from "@solana/actions";
+import { createAssociatedTokenAccountInstruction, getAssociatedTokenAddress, createTransferInstruction } from "@solana/spl-token";
 
 const helius = new Helius(process.env.HELIUS_API_KEY!);
 
@@ -48,95 +48,126 @@ export async function GET(request: Request) {
 export const OPTIONS = GET;
 
 
-import { SystemProgram } from "@solana/web3.js";
-
 export async function POST(request: Request) {
   const url = new URL(request.url);
-  const body: ActionPostRequest = await request.json();
   const mintAddress = request.url.split("/").pop();
+  const body: ActionPostRequest = await request.json();
   const amount = Number(url.searchParams.get("amount")) || 0.001;
 
   if (!mintAddress) {
     return new Response("Invalid mint address", { status: 400 });
   }
 
-  let accountB; // This is the receiver of NFT and payer of SOL
-  try {
-    accountB = new PublicKey(body.account);
-  } catch (error) {
-    return new Response(JSON.stringify({ error: { message: "Invalid account" } }), { status: 400 });
-  }
-
   const connection = new Connection(clusterApiUrl("mainnet-beta"), "confirmed");
 
+  let ACCOUNT_A: PublicKey;
+  let ACCOUNT_B: PublicKey;
+
   try {
-    const mintPubkey = new PublicKey(mintAddress);
+    const response: DAS.GetAssetResponse = await helius.rpc.getAsset({
+      id: mintAddress,
+      displayOptions: {
+        showCollectionMetadata: true,
+      },
+    });
+    ACCOUNT_A = new PublicKey(response.ownership.owner);
+  } catch (error) {
+    return new Response("Error fetching NFT metadata", { status: 500 });
+  }
 
-    // Get the current owner (ACCOUNT_A) of the NFT
-    const nftInfo = await connection.getParsedAccountInfo(mintPubkey);
-    if (!nftInfo.value || !nftInfo.value.data || typeof nftInfo.value.data !== 'object') {
-      throw new Error("Failed to fetch NFT info");
-    }
-    const accountA = new PublicKey((nftInfo.value.data as any).parsed.info.owner);
+  try {
+    ACCOUNT_B = new PublicKey(body.account);
+  } catch (error) {
+    return Response.json(
+      {
+        error: {
+          message: "Invalid account",
+        },
+      },
+      {
+        status: 400,
+        headers: ACTIONS_CORS_HEADERS,
+      }
+    );
+  }
 
-    // Get ACCOUNT_A's Associated Token Account (ATA)
-    const accountATA = await getAssociatedTokenAddress(mintPubkey, accountA);
+  const nftMintAddress = new PublicKey(mintAddress);
+  const paymentAmount = amount * LAMPORTS_PER_SOL;
 
-    // Get or create ACCOUNT_B's Associated Token Account (ATA)
-    const accountBATA = await getAssociatedTokenAddress(mintPubkey, accountB);
-
+  try {
     const transaction = new Transaction();
 
-    // Check if ACCOUNT_B's ATA exists, if not, add creation instruction
-    const accountBATAInfo = await connection.getAccountInfo(accountBATA);
-    if (!accountBATAInfo) {
+    const fromTokenAccount = await getAssociatedTokenAddress(
+      nftMintAddress,
+      ACCOUNT_A
+    );
+    const toTokenAccount = await getAssociatedTokenAddress(
+      nftMintAddress,
+      ACCOUNT_B
+    );
+
+    const toTokenAccountInfo = await connection.getAccountInfo(toTokenAccount);
+
+    if (!toTokenAccountInfo) {
       transaction.add(
         createAssociatedTokenAccountInstruction(
-          accountB, // payer
-          accountBATA, // ata
-          accountB, // owner
-          mintPubkey // mint
+          ACCOUNT_B,
+          toTokenAccount,
+          ACCOUNT_B,
+          nftMintAddress
         )
       );
     }
 
-    // Add SOL transfer instruction (ACCOUNT_B to ACCOUNT_A)
     transaction.add(
-      SystemProgram.transfer({
-        fromPubkey: accountB,
-        toPubkey: accountA,
-        lamports: amount * LAMPORTS_PER_SOL
-      })
-    );
-
-    // Add the NFT transfer instruction
-    transaction.add(
-      createTransferCheckedInstruction(
-        accountATA, // from (ACCOUNT_A's ATA)
-        mintPubkey, // mint
-        accountBATA, // to (ACCOUNT_B's ATA)
-        accountA, // owner of the source account
-        1, // amount (1 for NFT)
-        0 // decimals (0 for NFT)
+      createTransferInstruction(
+        fromTokenAccount,
+        toTokenAccount,
+        ACCOUNT_A,
+        1
       )
     );
 
-    transaction.feePayer = accountB; // ACCOUNT_B pays for the transaction
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey: ACCOUNT_B,
+        toPubkey: ACCOUNT_A,
+        lamports: paymentAmount,
+      })
+    );
+    const { blockhash } = await connection.getLatestBlockhash('finalized');
     transaction.recentBlockhash = blockhash;
-    transaction.lastValidBlockHeight = lastValidBlockHeight;
+    transaction.feePayer = ACCOUNT_B;
+
+    const serializedTransaction = transaction.serialize({
+      requireAllSignatures: false,
+      verifySignatures: false,
+    });
+
+    const transactionObject = Transaction.from(serializedTransaction);
 
     const payload: ActionPostResponse = await createPostResponse({
       fields: {
-        transaction,
-        message: "NFT transfer and SOL payment transaction created",
+        transaction: transactionObject,
+        message: "Transaction created",
       },
     });
+
     return new Response(JSON.stringify(payload), {
-      headers: ACTIONS_CORS_HEADERS
+      headers: ACTIONS_CORS_HEADERS,
     });
   } catch (error) {
-    console.error("Error creating transfer transaction:", error);
-    return new Response(JSON.stringify({ error: { message: "Error creating transfer transaction" } }), { status: 500 });
+    console.error('Error creating transaction:', error);
+    return Response.json(
+      {
+        error: {
+          message: "Error creating transaction",
+        },
+      },
+      {
+        status: 500,
+        headers: ACTIONS_CORS_HEADERS,
+      }
+    );
   }
 }
