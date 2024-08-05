@@ -36,8 +36,8 @@ export async function GET(request: Request) {
         ],
       },
     };
-    return new Response(JSON.stringify(payload), {
-      headers: ACTIONS_CORS_HEADERS
+    return Response.json(payload, {
+      headers: ACTIONS_CORS_HEADERS,
     });
   } catch (error) {
     return new Response("Error fetching NFT metadata", { status: 500 });
