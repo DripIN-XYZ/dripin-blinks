@@ -31,7 +31,7 @@ export async function GET(request: Request) {
         actions: [
           {
             label: "Transfer",
-            href: `${url.href}?amount=0.001`,
+            href: `${url.href}`,
           },
         ],
       },
