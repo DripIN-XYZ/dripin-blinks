@@ -7,9 +7,12 @@ const config = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
-	],
+  ],
   prefix: "",
   theme: {
+    fontFamily: {
+      Andvari: ["andvari"],
+    },
     container: {
       center: true,
       padding: "2rem",
@@ -19,6 +22,18 @@ const config = {
     },
     extend: {
       colors: {
+        blue: {
+          "100": "#E5EEFF",
+          "200": "#B7D0FF",
+          "300": "#8AB2FF",
+          "400": "#5C93FF",
+          "500": "#2E75FF",
+          "600": "#0057FF",
+          "700": "#0049D6",
+          "800": "#003BAD",
+          "900": "#002D85",
+          "1000": "#001F5C",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

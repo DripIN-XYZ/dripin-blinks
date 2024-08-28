@@ -1,4 +1,5 @@
-import ConnectWallet from "@/components/wallet";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function Header() {
     return (
@@ -6,7 +7,11 @@ export default function Header() {
             <div>
                 DripIN
             </div>
-            <ConnectWallet />
+            <Link href="/create">
+                <Button className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-base font-Andvari">
+                    Create Blink
+                </Button>
+            </Link>
         </header>
     );
 }
