@@ -8,20 +8,20 @@ export default function FormPagination(
 
     return (
         <div className="pt-8 w-full grid grid-cols-2 max-lg:grid-cols-1 gap-8">
-            <p className="pt-2 w-full flex gap-4 justify-start items-center">
+            <p className="pt-2 w-full text-sm flex gap-4 justify-start items-center">
                 {`Step ${currentFormPage} of ${totalFormPage}`}
                 <Progress value={progressValue} className="w-[60%] h-2" />
             </p>
             <div className="pt-2 flex w-full gap-4 justify-end items-center">
                 <Button
                     variant="secondary"
-                    className="border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-base font-Andvari"
+                    className="border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm font-Andvari"
                 >
                     back
                 </Button>
                 <Button
                     variant="default"
-                    className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-base font-Andvari"
+                    className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm font-Andvari"
                 >
                     next
                 </Button>
