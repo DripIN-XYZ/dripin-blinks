@@ -23,7 +23,12 @@ export default function ConnectWallet() {
         }
 
         const signInMessage = `
-Sign in to DripIN
+Welcome to DripIn
+
+The genesis for simplifying NFT trading
+
+By signing this message you agree to the
+teams and conditions
 
 Date: 
 ${new Date().toISOString()}
