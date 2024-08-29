@@ -12,7 +12,7 @@ export default function Wrapper({
                     {header}
                 </div>
             </div>
-            <div className="flex flex-row justify-between w-full h-[84vh]">
+            <div className="flex flex-row justify-between w-full min-h-[84vh]">
                 <div className="w-full max-w-[92vw] mx-auto border-r-2 border-l-2 border-dashed border-blue-600">
                     {children}
                 </div>
