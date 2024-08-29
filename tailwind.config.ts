@@ -34,6 +34,11 @@ const config = {
           "900": "#002D85",
           "1000": "#001F5C",
         },
+        grayText: {
+          "100": "#B2B2B2",
+          "200": "#6E7C7C",
+          "300": "#2C2C2C",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

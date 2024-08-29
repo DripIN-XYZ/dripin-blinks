@@ -65,9 +65,9 @@ ${publicKey?.toBase58()}
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="outline" className="mb-4">
+                <Button className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-base font-Andvari">
                     {!publicKey ?
-                        ("Wallet Connect") : (publicKey?.toBase58().slice(0, 4) + ".." + publicKey?.toBase58().slice(-4))
+                        ("Connect Wallet") : (publicKey?.toBase58().slice(0, 4) + ".." + publicKey?.toBase58().slice(-4))
                     }
                 </Button>
             </DialogTrigger>
@@ -103,7 +103,7 @@ ${publicKey?.toBase58()}
                                             <DialogDescription className="p-4 pt-0">
                                                 No Wallet found
                                             </DialogDescription>
-                                            <Button onClick={() => (window.open("https://phantom.app/", "_blank"))}>
+                                            <Button className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-base font-Andvari" onClick={() => (window.open("https://phantom.app/", "_blank"))}>
                                                 Download Phantom Wallet
                                             </Button>
                                         </div>
@@ -115,7 +115,7 @@ ${publicKey?.toBase58()}
                                 <DialogDescription>
                                     Connected to {publicKey.toBase58()}
                                 </DialogDescription>
-                                <Button onClick={disconnect}>
+                                <Button className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-base font-Andvari" onClick={disconnect}>
                                     Disconnect
                                 </Button>
                             </div>
