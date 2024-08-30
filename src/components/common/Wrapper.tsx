@@ -8,7 +8,7 @@ export default function Wrapper({
     return (
         <main className="flex flex-col w-full min-h-screen justify-between">
             <div className="flex flex-row w-full h-[8vh] justify-between border-b-2 border-blue-600">
-                <div className="w-full max-w-[92vw] mx-auto border-r-2 border-l-2 border-dashed border-blue-600">
+                <div className="flex items-center w-full max-w-[92vw] mx-auto border-r-2 border-l-2 border-dashed border-blue-600">
                     {header}
                 </div>
             </div>

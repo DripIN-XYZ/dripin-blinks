@@ -1,3 +1,4 @@
+import Header from "./_components/Header";
 import ConnectWallet from "@/components/wallet";
 import Wrapper from "@/components/common/Wrapper";
 import { InformationCircleIcon } from "hugeicons-react";
@@ -5,7 +6,9 @@ import FormPagination from "@/components/createBlink/formPagination";
 
 export default function CreateBlink() {
     return (
-        <Wrapper>
+        <Wrapper
+            header={<Header />}
+        >
             <div className="p-8 h-full grid grid-cols-2 max-lg:grid-cols-1 gap-8">
                 <div className="flex flex-col w-full justify-between">
                     <div className="h-full flex flex-col justify-center">
