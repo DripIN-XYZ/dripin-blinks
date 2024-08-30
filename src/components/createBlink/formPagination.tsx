@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
@@ -8,11 +10,13 @@ export default function FormPagination(
 
     return (
         <div className="pt-8 w-full grid grid-cols-2 max-lg:grid-cols-1 gap-8">
-            <p className="pt-2 w-full text-sm flex gap-4 justify-start items-center">
-                {`Step ${currentFormPage} of ${totalFormPage}`}
+            <div className="pt-2 flex gap-4 justify-start items-center">
+                <p className="w-fit text-sm">
+                    {`Step ${currentFormPage} of ${totalFormPage}`}
+                </p>
                 <Progress value={progressValue} className="w-[60%] h-2" />
-            </p>
-            <div className="pt-2 flex w-full gap-4 justify-end items-center">
+            </div>
+            <div className="pt-2 flex w-full gap-4 justify-end items-center max-lg:order-first">
                 <Button
                     variant="secondary"
                     className="border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm font-Andvari"
