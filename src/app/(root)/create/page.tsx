@@ -8,6 +8,7 @@ export default function CreateBlink() {
     return (
         <Wrapper
             header={<Header />}
+            footer={<></>}
         >
             <div className="p-8 h-full grid grid-cols-2 max-lg:grid-cols-1 gap-8">
                 <div className="flex flex-col w-full justify-between">

@@ -2,8 +2,8 @@ export default function Wrapper({
     children, header, footer
 }: Readonly<{
     children: React.ReactNode;
-    header?: React.ReactNode;
-    footer?: React.ReactNode;
+    header?: JSX.Element;
+    footer?: JSX.Element;
 }>) {
     return (
         <main className="flex flex-col w-full min-h-screen justify-between">
