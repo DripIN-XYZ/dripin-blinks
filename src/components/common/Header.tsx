@@ -16,13 +16,12 @@ export default function Header() {
                 />
                 <h1 className="text-2xl text-blue-600 font-Andvari font-normal">Dripin</h1>
             </Link>
-            {/* <Link href="/create">
-                <ConnectWallet />
+            <Link href="/create">
                 <Button className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-base font-Andvari">
                     Create Blink
                 </Button>
-            </Link> */}
-            <ConnectWallet />
+            </Link>
+            {/* <ConnectWallet /> */}
         </header>
     );
 }
