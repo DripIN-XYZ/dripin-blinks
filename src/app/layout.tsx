@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body className={cn(inter.className, "bg-[#FAFAFA] select-none")}>
         <NextTopLoader color="#0057FF" showSpinner={false} />
         {children}
+        <Toaster />
       </body>
     </html>
   );
