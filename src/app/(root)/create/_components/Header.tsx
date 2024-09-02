@@ -12,8 +12,8 @@ export default function Header(
         <header className="px-5 w-full flex items-center justify-between">
             <Link href="/" className="flex gap-2">
                 <Image
-                    width={96}
-                    height={96}
+                    width={256}
+                    height={256}
                     alt="Dripin Blink Logo"
                     src="/cdn/logo/favicon.webp"
                     className="w-8 h-8 object-cover"
