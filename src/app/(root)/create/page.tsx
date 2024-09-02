@@ -18,11 +18,11 @@ export default function CreateBlink() {
                         <p className="pt-4 text-xl font-normal text-black">
                             Think of connecting your wallet like logging into your favorite app. It unlocks your digital assets so you can use them on our platform.
                         </p>
-                        <p className="flex py-8 gap-2 items-center text-sm text-grayText-200">
+                        {/* <p className="flex py-8 gap-2 items-center text-sm text-grayText-200">
                             I don&apos;t have a wallet
                             <InformationCircleIcon className="w-4 h-4" />
-                        </p>
-                        <div>
+                        </p> */}
+                        <div className="py-8">
                             <ConnectWallet />
                         </div>
                     </div>

@@ -1,9 +1,8 @@
 "use client";
 
+import { useToast } from "@/hooks/use-toast";
 import { clusterApiUrl } from "@solana/web3.js";
 import React, { useMemo, useCallback } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import { InformationCircleIcon } from "hugeicons-react";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import type { Adapter, WalletError } from "@solana/wallet-adapter-base";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
@@ -19,7 +18,6 @@ export default function RootLayout({
 
     const onError = useCallback(
         (error: WalletError, adapter?: Adapter) => {
-            // toast.error(error.message ? `${error.name}: ${error.message}` : error.name, { icon: <InformationCircleIcon className="text-red-400 pr-1" /> });
             toast({
                 title: error.name,
                 variant: "destructive",
