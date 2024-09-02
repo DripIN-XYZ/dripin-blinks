@@ -8,7 +8,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import FormPagination from "@/components/createBlink/formPagination";
 
 export default function CreateBlink() {
-    const { publicKey } = useWallet();
+    const { publicKey, disconnecting } = useWallet();
     const [currentFormPage, setCurrentFormPage] = useState(1);
     const formPage = Array.from({ length: 7 }, (_, i) => i + 1);
 
@@ -16,7 +16,10 @@ export default function CreateBlink() {
         if (publicKey) {
             setCurrentFormPage(2);
         }
-    }, [publicKey]);
+        if (disconnecting) {
+            setCurrentFormPage(1);
+        }
+    }, [publicKey, disconnecting]);
 
     return (
         <Wrapper
