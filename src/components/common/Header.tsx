@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import ConnectWallet from "../wallet";
 
 export default function Header() {
     return (
@@ -21,7 +20,6 @@ export default function Header() {
                     Create Blink
                 </Button>
             </Link>
-            {/* <ConnectWallet /> */}
         </header>
     );
 }

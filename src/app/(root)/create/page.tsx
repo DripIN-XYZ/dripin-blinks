@@ -20,7 +20,7 @@ export default function CreateBlink() {
 
     return (
         <Wrapper
-            header={<Header />}
+            header={<Header currentFormPage={currentFormPage} />}
             footer={<></>}
         >
             <div className="p-8 h-full grid grid-cols-2 max-lg:grid-cols-1 gap-8">
