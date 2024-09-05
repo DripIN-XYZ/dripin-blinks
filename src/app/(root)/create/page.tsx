@@ -4,7 +4,6 @@ import Image from "next/image";
 import Header from "./_components/Header";
 import { useEffect, useState } from "react";
 import fetchTokens from "@/lib/searchAssets";
-import NextImage from "@/components/NextImage";
 import ConnectWallet from "@/components/wallet";
 import { Button } from "@/components/ui/button";
 import Wrapper from "@/components/common/Wrapper";
@@ -12,6 +11,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import FormPagination from "@/components/createBlink/formPagination";
 import { Grouping, Item, ItemsResponse } from "@/types/SearchAssetsType";
+import { NextImageCollection, NextImageNft } from "@/components/NextImage";
 
 export default function CreateBlink() {
     const { publicKey, disconnecting } = useWallet();
@@ -60,7 +60,7 @@ export default function CreateBlink() {
                                         className="h-fit border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm"
                                     >
                                         <div className="flex flex-col w-full h-fit gap-2 pt-2">
-                                            <NextImage
+                                            <NextImageCollection
                                                 src={collection.collection_metadata.image}
                                                 alt={collection.collection_metadata.name}
                                                 width={192}
@@ -98,7 +98,7 @@ export default function CreateBlink() {
                                         className="h-fit border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm"
                                     >
                                         <div className="flex flex-col w-full h-fit gap-2 pt-2">
-                                            <NextImage
+                                            <NextImageNft
                                                 src={nft.content.links.image}
                                                 alt={nft.content.metadata.name}
                                                 width={192}
