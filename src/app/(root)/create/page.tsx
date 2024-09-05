@@ -180,7 +180,7 @@ export default function CreateBlink() {
                                     setCurrentFormPage(currentFormPage + 1);
                                 }}
                                 variant="default"
-                                className="border-2 border-blue-600 bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm"
+                                className="border-2 border-blue-600 bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm font-Andvari"
                             >
                                 Confirm
                             </Button>
