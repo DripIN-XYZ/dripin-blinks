@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import Header from "./_components/Header";
 import { useEffect, useState } from "react";
 import fetchTokens from "@/lib/searchAssets";
+import { Input } from "@/components/ui/input";
 import ConnectWallet from "@/components/wallet";
 import { Button } from "@/components/ui/button";
 import Wrapper from "@/components/common/Wrapper";
@@ -27,6 +28,7 @@ export default function CreateBlink() {
     const [selectedNFTmintAddress, setSelectedNFTmintAddress] = useState<string>("");
 
     const [selectedMode, setSelectedMode] = useState<"SELL_NFT" | "BID_NFT" | null>(null);
+    const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
 
     const renderFormSection = (currentFormPage: number) => {
 
@@ -166,6 +168,23 @@ export default function CreateBlink() {
                     <div className="h-full flex flex-col justify-center">
                         <h1 className="text-5xl font-bold">Set Price</h1>
                         <h2 className="pt-2 text-xl font-normal text-black">What&apos;s your asking price for this NFT?</h2>
+                        <div className="pt-5 flex gap-4 items-center">
+                            <Input
+                                type="number"
+                                placeholder="Enter Amount"
+                                onChange={(e) => setSelectedPrice(parseInt(e.target.value))}
+                                className="w-1/3 text-sm bg-transparent focus-visible:ring-blue-800 font-Andvari appearance-none"
+                            />
+                            <Button
+                                onClick={() => {
+                                    setCurrentFormPage(currentFormPage + 1);
+                                }}
+                                variant="default"
+                                className="border-2 border-blue-600 bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm"
+                            >
+                                Confirm
+                            </Button>
+                        </div>
                     </div>
                 );
 
