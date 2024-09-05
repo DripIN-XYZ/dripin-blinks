@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Header from "./_components/Header";
 import fetchTokens from "@/lib/searchAssets";
 import NextImage from "@/components/NextImage";
@@ -107,18 +108,18 @@ export default function CreateBlink() {
                                                 variant="secondary"
                                                 className="h-fit border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm"
                                             >
-                                                <Suspense fallback={<div />}>
-                                                    <div className="flex flex-col w-full h-fit gap-2 pt-2">
-                                                        <NextImage
+                                                <div className="flex flex-col w-full h-fit gap-2 pt-2">
+                                                    <Suspense fallback="loading...">
+                                                        <Image
                                                             src={collection.collection_metadata.image}
                                                             alt={collection.collection_metadata.name}
                                                             width={192}
                                                             height={192}
                                                             className="aspect-square object-contain w-full h-full rounded-sm border-blue-600 border-2"
                                                         />
-                                                        <p className="text-sm">{collection.collection_metadata.name}</p>
-                                                    </div>
-                                                </Suspense>
+                                                    </Suspense>
+                                                    <p className="text-sm">{collection.collection_metadata.name}</p>
+                                                </div>
                                             </Button>
                                         ))}
                                     </div>
@@ -144,18 +145,18 @@ export default function CreateBlink() {
                                                 variant="secondary"
                                                 className="h-fit border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm"
                                             >
-                                                <Suspense fallback={<div />}>
-                                                    <div className="flex flex-col w-full h-fit gap-2 pt-2">
-                                                        <NextImage
+                                                <div className="flex flex-col w-full h-fit gap-2 pt-2">
+                                                    <Suspense fallback="loading...">
+                                                        <Image
                                                             src={nft.content.links.image}
                                                             alt={nft.content.metadata.name}
                                                             width={192}
                                                             height={192}
                                                             className="aspect-square object-contain w-full h-full rounded-sm border-blue-600 border-2"
                                                         />
-                                                        <p className="text-sm">{nft.content.metadata.name}</p>
-                                                    </div>
-                                                </Suspense>
+                                                    </Suspense>
+                                                    <p className="text-sm">{nft.content.metadata.name}</p>
+                                                </div>
                                             </Button>
                                         ))}
                                     </div>
@@ -194,7 +195,6 @@ export default function CreateBlink() {
                 </div>
                 <div className="flex w-full justify-center items-center max-lg:order-first">
                     <div className="w-full aspect-square bg-blue-100 rounded-md">
-
                     </div>
                 </div>
             </div>

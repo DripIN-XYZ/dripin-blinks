@@ -14,6 +14,7 @@ const fetchTokens = async (walletAddress: string): Promise<Tokens> => {
         const response = await fetch(url, {
             method: "POST",
             headers: {
+                "Cache-Control": "no-chache",
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
@@ -22,7 +23,7 @@ const fetchTokens = async (walletAddress: string): Promise<Tokens> => {
                 method: "searchAssets",
                 params: {
                     ownerAddress: walletAddress,
-                    tokenType: "all",
+                    tokenType: "regularNft",
                     displayOptions: {
                         showCollectionMetadata: true,
                     },
