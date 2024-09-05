@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { cn } from "@/lib/utils";
 import Header from "./_components/Header";
 import { useEffect, useState } from "react";
 import fetchTokens from "@/lib/searchAssets";
@@ -26,7 +26,10 @@ export default function CreateBlink() {
 
     const [selectedNFTmintAddress, setSelectedNFTmintAddress] = useState<string>("");
 
+    const [selectedMode, setSelectedMode] = useState<"SELL_NFT" | "BID_NFT" | null>(null);
+
     const renderFormSection = (currentFormPage: number) => {
+
         switch (currentFormPage) {
             case 1:
                 return (
@@ -119,6 +122,42 @@ export default function CreateBlink() {
                     <div className="h-full flex flex-col justify-center">
                         <h1 className="text-5xl font-bold">Choose mode</h1>
                         <h2 className="pt-2 text-xl font-normal text-black"> Ready to sell? Choose between a fixed price or an auction.</h2>
+                        <div className="pt-5 flex gap-4 items-center">
+                            <Button
+                                onClick={() => {
+                                    setSelectedMode("SELL_NFT");
+                                    setCurrentFormPage(currentFormPage + 1);
+                                }}
+                                variant={
+                                    selectedMode === "SELL_NFT"
+                                        ? "default"
+                                        : "secondary"
+                                }
+                                className={cn(
+                                    "border-2 border-blue-600 focus-visible:ring-blue-800 text-sm font-Andvari",
+                                    selectedMode === "SELL_NFT" ? "bg-blue-400 hover:bg-blue-300" : "bg-blue-100 hover:bg-blue-200"
+                                )}
+                            >
+                                SELL NFT
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    setSelectedMode("BID_NFT");
+                                    setCurrentFormPage(currentFormPage + 1);
+                                }}
+                                variant={
+                                    selectedMode === "BID_NFT"
+                                        ? "default"
+                                        : "secondary"
+                                }
+                                className={cn(
+                                    "border-2 border-blue-600 focus-visible:ring-blue-800 text-sm font-Andvari",
+                                    selectedMode === "BID_NFT" ? "bg-blue-400 hover:bg-blue-300" : "bg-blue-100 hover:bg-blue-200"
+                                )}
+                            >
+                                BID NFT
+                            </Button>
+                        </div>
                     </div>
                 );
 
