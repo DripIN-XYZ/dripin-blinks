@@ -72,7 +72,7 @@ export default function CreateBlink() {
                                                 height={192}
                                                 className="aspect-square object-contain w-full h-full rounded-sm border-blue-600 border-2"
                                             />
-                                            <p className="text-sm">{collection.collection_metadata.name}</p>
+                                            <p className="w-full text-sm truncate">{collection.collection_metadata.name}</p>
                                         </div>
                                     </Button>
                                 ))}
@@ -110,7 +110,7 @@ export default function CreateBlink() {
                                                 height={192}
                                                 className="aspect-square object-contain w-full h-full rounded-sm border-blue-600 border-2"
                                             />
-                                            <p className="text-sm">{nft.content.metadata.name}</p>
+                                            <p className="w-full text-sm truncate">{nft.content.metadata.name}</p>
                                         </div>
                                     </Button>
                                 ))}
