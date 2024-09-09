@@ -4,7 +4,7 @@ interface File {
     mime: string;
 }
 
-interface Attribute {
+export interface Attribute {
     value: string;
     trait_type: string;
 }

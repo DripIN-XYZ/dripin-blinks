@@ -2,11 +2,13 @@
 
 import { cn } from "@/lib/utils";
 import React, { useState } from "react";
+import { Skeleton } from "./ui/skeleton";
 import Image, { ImageProps } from "next/image";
 import FlickeringGrid from "@/components/magicui/flickering-grid";
 
 function SkeletonImage() {
     return (
+        // <Skeleton className="absolute inset-0 bg-blue-50 object-contain rounded-sm border-blue-600 border-2" />
         <FlickeringGrid
             className="z-0 absolute inset-0 size-full"
             squareSize={4}
