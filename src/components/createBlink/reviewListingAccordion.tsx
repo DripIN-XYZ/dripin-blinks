@@ -22,14 +22,14 @@ const CopyButtonColumn = (
     };
 
     return (
-        <div
-            className={`flex  ${flip ? "flex-row" : "flex-row-reverse"} justify-between items-center`}
-            onClick={handleCopy}
-        >
+        <div className={`flex  ${flip ? "flex-row" : "flex-row-reverse"} justify-between items-center`}>
             <div>
                 {row1}
             </div>
-            <div className="flex items-center gap-1 cursor-pointer group hover:underline hover:text-blue-600">
+            <div
+                className="flex items-center gap-1 cursor-pointer group hover:underline hover:text-blue-600"
+                onClick={handleCopy}
+            >
                 <p>{row2}</p>
                 <div
                     className="hover:scale-105 relative cursor-pointer"
