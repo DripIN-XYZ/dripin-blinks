@@ -1,8 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import Image, { ImageProps } from "next/image";
 import React, { useState } from "react";
+import Image, { ImageProps } from "next/image";
 import FlickeringGrid from "@/components/magicui/flickering-grid";
 
 function SkeletonImage() {
