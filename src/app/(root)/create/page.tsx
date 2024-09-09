@@ -256,7 +256,6 @@ export default function CreateBlink() {
                                     setSelectedNFTDetails(null);
                                     setSelectedMode(null);
                                     setSelectedPrice(null);
-                                    handleConfettiClick();
                                     setCurrentFormPage(1);
                                 }}
                                 variant="secondary"
