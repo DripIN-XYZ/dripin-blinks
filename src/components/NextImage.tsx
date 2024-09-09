@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import Image, { ImageProps } from "next/image";
 import React, { useState, useEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import FlickeringGrid from "@/components/magicui/flickering-grid";
 
 const blurImage = [
     "blur-3xl",
@@ -14,6 +14,21 @@ const blurImage = [
     "blur-sm",
     "blur-none",
 ];
+
+function SkeletonImage() {
+    return (
+        <FlickeringGrid
+            className="z-0 absolute inset-0 size-full"
+            squareSize={2}
+            gridGap={2}
+            color="#0057FF"
+            maxOpacity={0.5}
+            flickerChance={0.1}
+            height={512}
+            width={512}
+        />
+    );
+}
 
 interface NextImageProps extends Omit<ImageProps, "className" | "onLoad"> {
     alt: string;
@@ -42,9 +57,7 @@ export function NextImageCollection({ className, alt, ...props }: NextImageProps
 
     return (
         <div className="relative w-full h-full overflow-hidden">
-            {!isLoaded && (
-                <Skeleton className="absolute inset-0 bg-blue-50 object-contain rounded-sm border-blue-600 border-2" />
-            )}
+            {!isLoaded && (<SkeletonImage />)}
             <Image
                 {...props}
                 alt={alt}
@@ -82,9 +95,7 @@ export function NextImageNft({ className, alt, ...props }: NextImageProps) {
 
     return (
         <div className="relative w-full h-full overflow-hidden">
-            {!isLoaded && (
-                <Skeleton className="absolute inset-0 bg-blue-50 object-contain rounded-sm border-blue-600 border-2" />
-            )}
+            {!isLoaded && (<SkeletonImage />)}
             <Image
                 {...props}
                 alt={alt}
