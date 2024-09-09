@@ -1,12 +1,14 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
 import Header from "./_components/Header";
 import { useEffect, useState } from "react";
 import fetchTokens from "@/lib/searchAssets";
 import { Input } from "@/components/ui/input";
 import ConnectWallet from "@/components/wallet";
 import { Button } from "@/components/ui/button";
+import { NewTwitterIcon } from "hugeicons-react";
 import Wrapper from "@/components/common/Wrapper";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,7 +20,7 @@ import ReviewListingAccordion from "@/components/createBlink/reviewListingAccord
 export default function CreateBlink() {
     const { publicKey, disconnecting } = useWallet();
     const [currentFormPage, setCurrentFormPage] = useState<number>(1);
-    const formPage = Array.from({ length: 7 }, (_, i) => i + 1);
+    const formPage = Array.from({ length: 8 }, (_, i) => i + 1);
 
     const [tokens, setTokens] = useState<ItemsResponse | null>(null);
     const [collectionDetails, setCollectionDetails] = useState<Grouping[]>([]);
@@ -30,6 +32,35 @@ export default function CreateBlink() {
 
     const [selectedMode, setSelectedMode] = useState<"SELL_NFT" | "BID_NFT" | null>(null);
     const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
+
+    const handleConfettiClick = () => {
+        const duration = 5 * 1000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+        const randomInRange = (min: number, max: number) =>
+            Math.random() * (max - min) + min;
+
+        const interval = window.setInterval(() => {
+            const timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            const particleCount = 50 * (timeLeft / duration);
+            confetti({
+                ...defaults,
+                particleCount,
+                origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+            });
+            confetti({
+                ...defaults,
+                particleCount,
+                origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+            });
+        }, 250);
+    };
 
     const renderFormSection = (currentFormPage: number) => {
 
@@ -176,6 +207,7 @@ export default function CreateBlink() {
                         <h2 className="pt-2 text-xl font-normal text-black">What&apos;s your asking price for this NFT?</h2>
                         <div className="pt-5 flex gap-4 items-center">
                             <Input
+                                required
                                 type="number"
                                 placeholder="Enter Amount"
                                 onChange={(e) => setSelectedPrice(parseInt(e.target.value))}
@@ -216,6 +248,72 @@ export default function CreateBlink() {
                     <div className="h-full flex flex-col justify-center">
                         <h1 className="text-5xl font-bold">Claim Your Blink</h1>
                         <h2 className="pt-2 text-xl font-normal text-black">Are you ready to claim your exclusive Blink</h2>
+                        <div className="pt-5 flex gap-4 items-center">
+                            <Button
+                                onClick={() => {
+                                    setCollectionDetails([]);
+                                    setSelectedCollectionAddress("");
+                                    setSpecificCollectionDetails(null);
+                                    setSelectedNFTDetails(null);
+                                    setSelectedMode(null);
+                                    setSelectedPrice(null);
+                                    handleConfettiClick();
+                                    setCurrentFormPage(1);
+                                }}
+                                variant="secondary"
+                                className="border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm font-Andvari"
+                            >
+                                clear
+                            </Button>
+                            <Button
+                                variant="default"
+                                onClick={() => {
+                                    setCurrentFormPage(currentFormPage + 1);
+                                    setCollectionDetails([]);
+                                    setSelectedCollectionAddress("");
+                                    setSpecificCollectionDetails(null);
+                                    setSelectedNFTDetails(null);
+                                    setSelectedMode(null);
+                                    setSelectedPrice(null);
+                                    handleConfettiClick();
+                                }}
+                                className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm font-Andvari"
+                            >
+                                Confirm
+                            </Button>
+                        </div>
+                    </div>
+                );
+
+            case 8:
+                return (
+                    <div className="h-full flex flex-col justify-center">
+                        <h1 className="text-5xl font-bold">Share Your Blink!</h1>
+                        <h2 className="pt-2 text-xl font-normal text-black">Spread the word about your exclusive Blink amongst everyone </h2>
+                        <div className="pt-5 flex gap-4 items-center">
+                            <Button
+                                variant="secondary"
+                                className="border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm font-Andvari"
+                            >
+                                <NewTwitterIcon />
+                            </Button>
+                            <p className="font-normal text-sm font-Andvari">share on x!</p>
+                        </div>
+                        <div className="pt-5 flex gap-4 items-center">
+                            <Button
+                                onClick={() => setCurrentFormPage(1)}
+                                variant="secondary"
+                                className="border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm font-Andvari"
+                            >
+                                Create Another
+                            </Button>
+                            <Button
+                                variant="default"
+                                className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm font-Andvari"
+                            >
+                                Go to Dashboard
+                            </Button>
+                        </div>
                     </div>
                 );
 
