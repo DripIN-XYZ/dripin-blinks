@@ -251,7 +251,6 @@ export default function CreateBlink() {
                         <div className="pt-5 flex gap-4 items-center">
                             <Button
                                 onClick={() => {
-                                    setCollectionDetails([]);
                                     setSelectedCollectionAddress("");
                                     setSpecificCollectionDetails(null);
                                     setSelectedNFTDetails(null);
@@ -269,7 +268,6 @@ export default function CreateBlink() {
                                 variant="default"
                                 onClick={() => {
                                     setCurrentFormPage(currentFormPage + 1);
-                                    setCollectionDetails([]);
                                     setSelectedCollectionAddress("");
                                     setSpecificCollectionDetails(null);
                                     setSelectedNFTDetails(null);
