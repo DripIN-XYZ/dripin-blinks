@@ -13,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import FormPagination from "@/components/createBlink/formPagination";
 import { Grouping, Item, ItemsResponse } from "@/types/SearchAssetsType";
 import { NextImageCollection, NextImageNft } from "@/components/NextImage";
+import ReviewListingAccordion from "@/components/createBlink/reviewListingAccordion";
 
 export default function CreateBlink() {
     const { publicKey, disconnecting } = useWallet();
@@ -25,7 +26,7 @@ export default function CreateBlink() {
     const [selectedCollectionAddress, setSelectedCollectionAddress] = useState<string>("");
     const [specificCollectionDetails, setSpecificCollectionDetails] = useState<Item[] | null>(null);
 
-    const [selectedNFTmintAddress, setSelectedNFTmintAddress] = useState<string>("");
+    const [selectedNFTDetails, setSelectedNFTDetails] = useState<Item | null>(null);
 
     const [selectedMode, setSelectedMode] = useState<"SELL_NFT" | "BID_NFT" | null>(null);
     const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
@@ -96,7 +97,7 @@ export default function CreateBlink() {
                                     <Button
                                         key={index}
                                         onClick={() => {
-                                            setSelectedNFTmintAddress(nft.id);
+                                            setSelectedNFTDetails(nft);
                                             setCurrentFormPage(currentFormPage + 1)
                                         }}
                                         variant="secondary"
@@ -124,6 +125,11 @@ export default function CreateBlink() {
                     <div className="h-full flex flex-col justify-center">
                         <h1 className="text-5xl font-bold">Choose mode</h1>
                         <h2 className="pt-2 text-xl font-normal text-black"> Ready to sell? Choose between a fixed price or an auction.</h2>
+                        <p className="text-lg font-normal text-blue-500">
+                            <strong>
+                                {selectedNFTDetails && selectedNFTDetails.content.metadata.name}
+                            </strong>
+                        </p>
                         <div className="pt-5 flex gap-4 items-center">
                             <Button
                                 onClick={() => {
@@ -193,6 +199,15 @@ export default function CreateBlink() {
                     <div className="h-full flex flex-col justify-center">
                         <h1 className="text-5xl font-bold">Review Listing</h1>
                         <h2 className="pt-2 text-xl font-normal text-black"> Please review your listing details before confirming.</h2>
+                        {selectedNFTDetails && selectedPrice && selectedMode ? (
+                            <ScrollArea className="pt-4 w-full h-[70vh] overflow-hidden">
+                                <ReviewListingAccordion
+                                    selectedMode={selectedMode}
+                                    sellingPrice={selectedPrice}
+                                    nftDetails={selectedNFTDetails}
+                                />
+                            </ScrollArea>
+                        ) : null}
                     </div>
                 );
 
