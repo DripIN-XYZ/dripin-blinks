@@ -31,7 +31,7 @@ export default function CreateBlink() {
 
     const [selectedNFTDetails, setSelectedNFTDetails] = useState<Item | null>(null);
 
-    const [selectedMode, setSelectedMode] = useState<"SELL_NFT" | "BID_NFT" | null>(null);
+    const [selectedMode, setSelectedMode] = useState<"SELL_NFT" | "AUCTION_NFT" | null>(null);
     const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
 
     const handleConfettiClick = () => {
@@ -225,17 +225,17 @@ export default function CreateBlink() {
                             </Button>
                             <Button
                                 onClick={() => {
-                                    setSelectedMode("BID_NFT");
+                                    setSelectedMode("AUCTION_NFT");
                                     setCurrentFormPage(currentFormPage + 1);
                                 }}
                                 variant={
-                                    selectedMode === "BID_NFT"
+                                    selectedMode === "AUCTION_NFT"
                                         ? "default"
                                         : "secondary"
                                 }
                                 className={cn(
                                     "border-2 border-blue-600 focus-visible:ring-blue-800 text-sm font-Andvari",
-                                    selectedMode === "BID_NFT" ? "bg-blue-400 hover:bg-blue-300" : "bg-blue-100 hover:bg-blue-200"
+                                    selectedMode === "AUCTION_NFT" ? "bg-blue-400 hover:bg-blue-300" : "bg-blue-100 hover:bg-blue-200"
                                 )}
                             >
                                 BID NFT
@@ -311,11 +311,6 @@ export default function CreateBlink() {
                                 variant="default"
                                 onClick={() => {
                                     setCurrentFormPage(currentFormPage + 1);
-                                    setSelectedCollectionAddress("");
-                                    setSpecificCollectionDetails(null);
-                                    setSelectedNFTDetails(null);
-                                    setSelectedMode(null);
-                                    setSelectedPrice(null);
                                     handleConfettiClick();
                                 }}
                                 className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm font-Andvari"
@@ -342,7 +337,14 @@ export default function CreateBlink() {
                         </div>
                         <div className="pt-5 flex gap-4 items-center">
                             <Button
-                                onClick={() => setCurrentFormPage(1)}
+                                onClick={() => {
+                                    setSelectedCollectionAddress("");
+                                    setSpecificCollectionDetails(null);
+                                    setSelectedNFTDetails(null);
+                                    setSelectedMode(null);
+                                    setSelectedPrice(null);
+                                    setCurrentFormPage(1);
+                                }}
                                 variant="secondary"
                                 className="border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm font-Andvari"
                             >
@@ -362,6 +364,35 @@ export default function CreateBlink() {
                 return null;
         }
     }
+
+    const renderBlinkSection = (
+        {
+            collectionDetails, nftDetails, sellingMode, defaultPrice
+        }: {
+            collectionDetails?: {
+                collectionImage: string | null,
+                collectionName: string | null,
+                collectionDescription: string | null,
+            };
+            nftDetails?: {
+                nftImage: string | undefined,
+                nftName: string | undefined,
+                nftDescription: string | undefined,
+            };
+            sellingMode?: "SELL_NFT" | "AUCTION_NFT" | null;
+            defaultPrice?: number | null;
+        }
+    ) => {
+        return (
+            <div>
+                <pre>
+                    <code>
+                        {JSON.stringify({ collectionDetails, nftDetails, sellingMode, defaultPrice }, null, 2)}
+                    </code>
+                </pre>
+            </div>
+        )
+    };
 
     useEffect(() => {
         if (publicKey) {
@@ -431,6 +462,20 @@ export default function CreateBlink() {
                 </div>
                 <div className="flex w-full justify-center items-center max-lg:order-first">
                     <div className="w-full aspect-square bg-blue-100 rounded-md">
+                        {renderBlinkSection({
+                            collectionDetails: {
+                                collectionImage: specificCollectionDetails && specificCollectionDetails[0].grouping[0].collection_metadata.image,
+                                collectionName: specificCollectionDetails && specificCollectionDetails[0].grouping[0].collection_metadata.name,
+                                collectionDescription: specificCollectionDetails && specificCollectionDetails[0].grouping[0].collection_metadata.description
+                            },
+                            nftDetails: {
+                                nftImage: selectedNFTDetails?.content.links.image,
+                                nftName: selectedNFTDetails?.content.metadata.name,
+                                nftDescription: selectedNFTDetails?.content.metadata.description
+                            },
+                            sellingMode: selectedMode,
+                            defaultPrice: selectedPrice
+                        })}
                     </div>
                 </div>
             </div>
