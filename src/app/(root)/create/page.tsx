@@ -12,6 +12,7 @@ import { NewTwitterIcon } from "hugeicons-react";
 import Wrapper from "@/components/common/Wrapper";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import FlickeringGrid from "@/components/magicui/flickering-grid";
 import FormPagination from "@/components/createBlink/formPagination";
 import { Grouping, Item, ItemsResponse } from "@/types/SearchAssetsType";
 import { NextImageCollection, NextImageNft } from "@/components/NextImage";
@@ -85,30 +86,73 @@ export default function CreateBlink() {
                         <h1 className="text-5xl font-bold">Select a Collection</h1>
                         <h2 className="pt-2 text-xl font-normal text-black">Choose the collection you want to list an NFT from.</h2>
                         <ScrollArea className="pt-4 w-full h-[70vh] overflow-hidden">
-                            <div className="grid grid-cols-3 max-lg:grid-cols-2 gap-4">
-                                {collectionDetails && collectionDetails.map((collection, index) => (
-                                    <Button
-                                        key={index}
-                                        onClick={() => {
-                                            setSelectedCollectionAddress(collection.group_value);
-                                            setCurrentFormPage(currentFormPage + 1)
-                                        }}
-                                        variant="secondary"
-                                        className="h-fit border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm"
-                                    >
-                                        <div className="flex flex-col w-full h-fit gap-2 pt-2">
-                                            <NextImageCollection
-                                                src={collection.collection_metadata.image}
-                                                alt={collection.collection_metadata.name}
-                                                width={192}
-                                                height={192}
-                                                className="aspect-square object-contain w-full h-full rounded-sm border-blue-600 border-2"
-                                            />
-                                            <p className="w-full text-sm truncate">{collection.collection_metadata.name}</p>
-                                        </div>
-                                    </Button>
-                                ))}
-                            </div>
+                            {tokens === null ? (
+                                <div className="grid grid-cols-3 max-lg:grid-cols-2 gap-4">
+                                    {new Array(6).fill(null).map((index) => (
+                                        <Button
+                                            key={index}
+                                            variant="secondary"
+                                            className="h-fit border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm"
+                                        >
+                                            <div className="flex flex-col w-full h-fit gap-2 pt-2">
+                                                <div className="relative w-full h-full overflow-hidden aspect-square rounded-sm border-blue-600 border-2">
+                                                    <FlickeringGrid
+                                                        className="z-0 absolute inset-0 size-full"
+                                                        squareSize={4}
+                                                        gridGap={2}
+                                                        color="#0057FF"
+                                                        maxOpacity={0.5}
+                                                        flickerChance={0.1}
+                                                        height={256}
+                                                        width={256}
+                                                    />
+                                                </div>
+                                                <div className="relative w-full h-4 overflow-hidden rounded-sm">
+                                                    <FlickeringGrid
+                                                        className="z-0 absolute inset-0 size-full"
+                                                        squareSize={4}
+                                                        gridGap={2}
+                                                        color="#0057FF"
+                                                        maxOpacity={0.5}
+                                                        flickerChance={0.1}
+                                                        height={256}
+                                                        width={256}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </Button>
+                                    ))}
+                                </div>
+                            ) : tokens.items.total === 0 ? (
+                                <div>
+                                    <p className="text-lg font-normal text-black">No Collection found in your wallet</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-3 max-lg:grid-cols-2 gap-4">
+                                    {collectionDetails && collectionDetails.map((collection, index) => (
+                                        <Button
+                                            key={index}
+                                            onClick={() => {
+                                                setSelectedCollectionAddress(collection.group_value);
+                                                setCurrentFormPage(currentFormPage + 1)
+                                            }}
+                                            variant="secondary"
+                                            className="h-fit border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm"
+                                        >
+                                            <div className="flex flex-col w-full h-fit gap-2 pt-2">
+                                                <NextImageCollection
+                                                    src={collection.collection_metadata.image}
+                                                    alt={collection.collection_metadata.name}
+                                                    width={192}
+                                                    height={192}
+                                                    className="aspect-square object-contain w-full h-full rounded-sm border-blue-600 border-2"
+                                                />
+                                                <p className="w-full text-sm truncate">{collection.collection_metadata.name}</p>
+                                            </div>
+                                        </Button>
+                                    ))}
+                                </div>
+                            )}
                         </ScrollArea>
                     </div>
                 );

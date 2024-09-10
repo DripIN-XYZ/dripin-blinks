@@ -2,7 +2,6 @@
 
 import { cn } from "@/lib/utils";
 import React, { useState } from "react";
-import { Skeleton } from "./ui/skeleton";
 import Image, { ImageProps } from "next/image";
 import FlickeringGrid from "@/components/magicui/flickering-grid";
 
@@ -16,8 +15,8 @@ function SkeletonImage() {
             color="#0057FF"
             maxOpacity={0.5}
             flickerChance={0.1}
-            height={512}
-            width={512}
+            height={256}
+            width={256}
         />
     );
 }
