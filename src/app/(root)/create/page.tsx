@@ -64,7 +64,6 @@ export default function CreateBlink() {
     };
 
     const renderFormSection = (currentFormPage: number) => {
-
         switch (currentFormPage) {
             case 1:
                 return (
@@ -134,6 +133,9 @@ export default function CreateBlink() {
                                             key={index}
                                             onClick={() => {
                                                 setSelectedCollectionAddress(collection.group_value);
+                                                if (selectedNFTDetails !== null) {
+                                                    setSelectedNFTDetails(null);
+                                                }
                                                 setCurrentFormPage(currentFormPage + 1)
                                             }}
                                             variant="secondary"
@@ -238,7 +240,7 @@ export default function CreateBlink() {
                                     selectedMode === "AUCTION_NFT" ? "bg-blue-400 hover:bg-blue-300" : "bg-blue-100 hover:bg-blue-200"
                                 )}
                             >
-                                BID NFT
+                                AUCTION NFT
                             </Button>
                         </div>
                     </div>
@@ -375,21 +377,56 @@ export default function CreateBlink() {
                 collectionDescription: string | null,
             };
             nftDetails?: {
-                nftImage: string | undefined,
-                nftName: string | undefined,
-                nftDescription: string | undefined,
+                nftImage: string | null,
+                nftName: string | null,
+                nftDescription: string | null,
             };
             sellingMode?: "SELL_NFT" | "AUCTION_NFT" | null;
             defaultPrice?: number | null;
         }
     ) => {
         return (
-            <div>
-                <pre>
-                    <code>
-                        {JSON.stringify({ collectionDetails, nftDetails, sellingMode, defaultPrice }, null, 2)}
-                    </code>
-                </pre>
+            <div className="w-full">
+                {
+                    collectionDetails?.collectionName && collectionDetails.collectionImage && collectionDetails.collectionDescription ?
+                        nftDetails?.nftName && nftDetails.nftImage && nftDetails.nftDescription ? (
+                            <div className="p-4 flex flex-col w-full h-fit gap-2 rounded-lg border-2 border-blue-600">
+                                <NextImageCollection
+                                    src={nftDetails.nftImage}
+                                    alt={nftDetails.nftName}
+                                    width={512}
+                                    height={512}
+                                    quality={50}
+                                    className="aspect-square object-contain w-full rounded-sm border-blue-600 border-2"
+                                />
+                                <p className="w-full text-sm text-balance">{nftDetails.nftDescription}</p>
+                            </div>
+                        ) : (
+                            <div className="p-4 flex flex-col w-full h-fit gap-2 rounded-lg border-2 border-blue-600">
+                                <NextImageNft
+                                    src={collectionDetails.collectionImage}
+                                    alt={collectionDetails.collectionName}
+                                    width={512}
+                                    height={512}
+                                    quality={50}
+                                    className="aspect-square object-contain w-full rounded-sm border-blue-600 border-2"
+                                />
+                                <p className="w-full text-sm text-balance">{collectionDetails.collectionDescription}</p>
+                            </div>
+                        ) : (
+                            <></>
+                        )
+                }
+                {/* <pre
+                    className="sr-only"
+                >
+                    {JSON.stringify({
+                        collectionDetails,
+                        nftDetails,
+                        sellingMode,
+                        defaultPrice
+                    }, null, 2)}
+                </pre> */}
             </div>
         )
     };
@@ -461,21 +498,23 @@ export default function CreateBlink() {
                     </div>
                 </div>
                 <div className="flex w-full justify-center items-center max-lg:order-first">
-                    <div className="w-full aspect-square bg-blue-100 rounded-md">
-                        {renderBlinkSection({
-                            collectionDetails: {
-                                collectionImage: specificCollectionDetails && specificCollectionDetails[0].grouping[0].collection_metadata.image,
-                                collectionName: specificCollectionDetails && specificCollectionDetails[0].grouping[0].collection_metadata.name,
-                                collectionDescription: specificCollectionDetails && specificCollectionDetails[0].grouping[0].collection_metadata.description
-                            },
-                            nftDetails: {
-                                nftImage: selectedNFTDetails?.content.links.image,
-                                nftName: selectedNFTDetails?.content.metadata.name,
-                                nftDescription: selectedNFTDetails?.content.metadata.description
-                            },
-                            sellingMode: selectedMode,
-                            defaultPrice: selectedPrice
-                        })}
+                    <div className="flex w-full aspect-square bg-blue-100 rounded-md justify-center items-center">
+                        <div className="flex w-1/2">
+                            {renderBlinkSection({
+                                collectionDetails: {
+                                    collectionImage: specificCollectionDetails && specificCollectionDetails[0].grouping[0].collection_metadata.image,
+                                    collectionName: specificCollectionDetails && specificCollectionDetails[0].grouping[0].collection_metadata.name,
+                                    collectionDescription: specificCollectionDetails && specificCollectionDetails[0].grouping[0].collection_metadata.description
+                                },
+                                nftDetails: {
+                                    nftImage: selectedNFTDetails && selectedNFTDetails.content.links.image,
+                                    nftName: selectedNFTDetails && selectedNFTDetails.content.metadata.name,
+                                    nftDescription: selectedNFTDetails && selectedNFTDetails?.content.metadata.description
+                                },
+                                sellingMode: selectedMode,
+                                defaultPrice: selectedPrice
+                            })}
+                        </div>
                     </div>
                 </div>
             </div>

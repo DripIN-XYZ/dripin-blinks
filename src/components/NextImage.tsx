@@ -15,8 +15,8 @@ function SkeletonImage() {
             color="#0057FF"
             maxOpacity={0.5}
             flickerChance={0.1}
-            height={256}
-            width={256}
+            height={512}
+            width={512}
         />
     );
 }
