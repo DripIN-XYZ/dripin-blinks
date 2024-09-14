@@ -36,7 +36,7 @@ export async function GET(request: Request) {
         });
 
         const payload: ActionGetResponse = {
-            icon: `${response.data.result.nft.image_uri}`,
+            icon: `https://image.dripin.xyz/api/resize?url=${response.data.result.nft.image_uri}&width=512`,
             title: `${response.data.result.nft.name}`,
             description: `${response.data.result.nft.description}`,
             label: `Buy NFT ${response.data.result.nft_address}`,
