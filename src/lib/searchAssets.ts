@@ -1,9 +1,8 @@
-// import { ItemsResponse } from "@/types/SearchAssetsType";
-
-
 interface Tokens {
     items: any[];
 }
+
+const tokenType: "fungible" | "nonFungible" | "compressedNft" | "regularNft" = "regularNft";
 
 const fetchTokens = async (walletAddress: string): Promise<Tokens> => {
     const url = `https://mainnet.helius-rpc.com/?api-key=${process.env.NEXT_PUBLIC_HELIUS_API_KEY}` || "https://mainnet.helius-rpc.com";
@@ -22,7 +21,7 @@ const fetchTokens = async (walletAddress: string): Promise<Tokens> => {
                 method: "searchAssets",
                 params: {
                     ownerAddress: walletAddress,
-                    tokenType: "all",
+                    tokenType: tokenType,
                     displayOptions: {
                         showCollectionMetadata: true,
                     },

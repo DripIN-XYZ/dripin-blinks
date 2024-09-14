@@ -10,8 +10,10 @@ import ConnectWallet from "@/components/wallet";
 import { Button } from "@/components/ui/button";
 import { NewTwitterIcon } from "hugeicons-react";
 import Wrapper from "@/components/common/Wrapper";
+import { encTxListNFT } from "@/lib/shyft/listNft";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Connection, Transaction } from '@solana/web3.js';
 import FlickeringGrid from "@/components/magicui/flickering-grid";
 import FormPagination from "@/components/createBlink/formPagination";
 import { Grouping, Item, ItemsResponse } from "@/types/SearchAssetsType";
@@ -19,7 +21,7 @@ import { NextImageCollection, NextImageNft } from "@/components/NextImage";
 import ReviewListingAccordion from "@/components/createBlink/reviewListingAccordion";
 
 export default function CreateBlink() {
-    const { publicKey, disconnecting } = useWallet();
+    const { publicKey, signTransaction, sendTransaction, connected, disconnecting } = useWallet();
     const [currentFormPage, setCurrentFormPage] = useState<number>(1);
     const formPage = Array.from({ length: 8 }, (_, i) => i + 1);
 
@@ -61,6 +63,53 @@ export default function CreateBlink() {
                 origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
             });
         }, 250);
+    };
+
+    const executeTransaction = async ({ encTx }: { encTx: string }) => {
+        if (!connected) {
+            console.error('Wallet not connected or no transaction to execute');
+            return;
+        }
+
+        try {
+            const connection = new Connection('https://api.mainnet-beta.solana.com');
+            const encodedTransaction = encTx;
+            const transaction = Transaction.from(Buffer.from(encodedTransaction, 'base64'));
+
+            transaction.feePayer = publicKey!;
+            if (signTransaction) {
+                const signedTransaction = await signTransaction(transaction);
+                const signature = await sendTransaction(signedTransaction, connection);
+                const confirmation = await connection.confirmTransaction(signature);
+                console.log('Transaction confirmed:', confirmation);
+            } else {
+                console.error('signTransaction is not defined');
+                return;
+            }
+        } catch (error) {
+            console.error('Error executing transaction:', error);
+        }
+    };
+
+    const handleTransectionClick = () => {
+        encTxListNFT({
+            nft_address: selectedNFTDetails?.id as string,
+            price: selectedPrice as number,
+            seller_wallet: publicKey?.toString() as string
+        }).then((data) => {
+            console.log("DATA", data);
+            if (data) {
+                const encTx = data.result.encoded_transaction;
+                executeTransaction({ encTx });
+                setCurrentFormPage(currentFormPage + 1);
+                handleConfettiClick();
+            }
+            else {
+                console.error("Error in transaction");
+            }
+        }).catch(
+            console.error
+        );
     };
 
     const renderFormSection = (currentFormPage: number) => {
@@ -251,24 +300,25 @@ export default function CreateBlink() {
                     <div className="h-full flex flex-col justify-center">
                         <h1 className="text-5xl font-bold">Set Price</h1>
                         <h2 className="pt-2 text-xl font-normal text-black">What&apos;s your asking price for this NFT?</h2>
-                        <div className="pt-5 flex gap-4 items-center">
+                        <form className="pt-5 flex gap-4 items-center">
                             <Input
                                 required
                                 type="number"
                                 placeholder="Enter Amount"
-                                onChange={(e) => setSelectedPrice(parseInt(e.target.value))}
+                                onChange={(e) => setSelectedPrice(e.target.valueAsNumber)}
                                 className="w-1/3 text-sm bg-transparent focus-visible:ring-blue-800 font-Andvari appearance-none"
                             />
                             <Button
                                 onClick={() => {
                                     setCurrentFormPage(currentFormPage + 1);
                                 }}
+                                type="submit"
                                 variant="default"
                                 className="border-2 border-blue-600 bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm font-Andvari"
                             >
                                 Confirm
                             </Button>
-                        </div>
+                        </form>
                     </div>
                 );
 
@@ -312,8 +362,7 @@ export default function CreateBlink() {
                             <Button
                                 variant="default"
                                 onClick={() => {
-                                    setCurrentFormPage(currentFormPage + 1);
-                                    handleConfettiClick();
+                                    handleTransectionClick();
                                 }}
                                 className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm font-Andvari"
                             >
