@@ -134,21 +134,21 @@ export async function POST(request: Request) {
 
         const encodedTransaction = await buyMarketplaceListing(nftData, buyerAddress);
 
-        const connection = new Connection(SOLANA_RPC_URL);
+        // const connection = new Connection(SOLANA_RPC_URL);
         const transaction = Transaction.from(Buffer.from(encodedTransaction.result.encoded_transaction, 'base64'));
 
-        const signature = await connection.sendRawTransaction(transaction.serialize(), {
-            skipPreflight: true,
-        });
+        // const signature = await connection.sendRawTransaction(transaction.serialize(), {
+        //     skipPreflight: true,
+        // });
 
-        await connection.confirmTransaction(signature, 'confirmed');
+        // await connection.confirmTransaction(signature, 'confirmed');
 
-        let transactionObject: Transaction = transaction;
+        // let transactionObject: Transaction = transaction;
 
         const payload: ActionPostResponse = await createPostResponse({
             fields: {
-                transaction: transactionObject,
-                message: `Transaction created and confirmed. Signature: ${signature}`,
+                transaction: transaction,
+                message: `Transaction created and confirmed`,
             },
         });
 
