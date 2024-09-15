@@ -2,7 +2,7 @@ interface Tokens {
     items: any[];
 }
 
-const tokenType: "fungible" | "nonFungible" | "compressedNft" | "regularNft" = "regularNft";
+const tokenType: "fungible" | "nonFungible" | "compressedNft" | "regularNft" | "all" = "all";
 
 const fetchTokens = async (walletAddress: string): Promise<Tokens> => {
     const url = `https://mainnet.helius-rpc.com/?api-key=${process.env.NEXT_PUBLIC_HELIUS_API_KEY}` || "https://mainnet.helius-rpc.com";
