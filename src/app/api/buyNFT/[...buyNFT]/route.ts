@@ -90,7 +90,7 @@ export async function GET(request: Request) {
 
         if (nftData.result.purchase_receipt !== null) {
             payload = {
-                icon: `https://image.dripin.xyz/api/resize?url=${nftData.result.nft.image_uri}&width=512`,
+                icon: `https://image.dripin.xyz/api/resize?url=${nftData.result.nft.image_uri}&width=512&height=512`,
                 title: nftData.result.nft.name,
                 description: nftData.result.nft.description,
                 label: "Sold NFT",
@@ -98,7 +98,7 @@ export async function GET(request: Request) {
             };
         } else {
             payload = {
-                icon: `https://image.dripin.xyz/api/resize?url=${nftData.result.nft.image_uri}&width=512`,
+                icon: `https://image.dripin.xyz/api/resize?url=${nftData.result.nft.image_uri}&width=512&height=512`,
                 title: nftData.result.nft.name,
                 description: nftData.result.nft.description,
                 label: `Buy NFT ${nftData.result.nft_address}`,
