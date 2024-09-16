@@ -86,20 +86,32 @@ export async function GET(request: Request) {
         const listAddress = getListAddress(request.url);
         const nftData = await fetchNFTData(listAddress);
 
-        const payload: ActionGetResponse = {
-            icon: `https://image.dripin.xyz/api/resize?url=${nftData.result.nft.image_uri}&width=512`,
-            title: nftData.result.nft.name,
-            description: nftData.result.nft.description,
-            label: `Buy NFT ${nftData.result.nft_address}`,
-            links: {
-                actions: [
-                    {
-                        label: `Buy NFT ${nftData.result.price}`,
-                        href: url.href,
-                    },
-                ],
-            },
-        };
+        let payload: ActionGetResponse;
+
+        if (nftData.result.purchase_receipt !== null) {
+            payload = {
+                icon: `https://image.dripin.xyz/api/resize?url=${nftData.result.nft.image_uri}&width=512`,
+                title: nftData.result.nft.name,
+                description: nftData.result.nft.description,
+                label: "Sold NFT",
+                disabled: true
+            };
+        } else {
+            payload = {
+                icon: `https://image.dripin.xyz/api/resize?url=${nftData.result.nft.image_uri}&width=512`,
+                title: nftData.result.nft.name,
+                description: nftData.result.nft.description,
+                label: `Buy NFT ${nftData.result.nft_address}`,
+                links: {
+                    actions: [
+                        {
+                            label: `Buy NFT ${nftData.result.price}`,
+                            href: url.href,
+                        },
+                    ],
+                },
+            };
+        }
 
         return Response.json(payload, { headers: ACTIONS_CORS_HEADERS });
     } catch (error) {

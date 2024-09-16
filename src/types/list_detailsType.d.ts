@@ -15,6 +15,7 @@ export interface Result {
     currency_symbol:     string;
     created_at:          Date;
     receipt:             string;
+    purchase_receipt:    string;
 }
 
 export interface Nft {
