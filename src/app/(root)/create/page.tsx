@@ -36,6 +36,8 @@ export default function CreateBlink() {
     const [selectedMode, setSelectedMode] = useState<"SELL_NFT" | "AUCTION_NFT" | null>(null);
     const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
 
+    const [blinkLink, setBlinkLink] = useState<string | null>(null);
+
     const handleConfettiClick = () => {
         const duration = 5 * 1000;
         const animationEnd = Date.now() + duration;
@@ -102,6 +104,7 @@ export default function CreateBlink() {
                 const encTx = data.result.encoded_transaction;
                 executeTransaction({ encTx });
                 setCurrentFormPage(currentFormPage + 1);
+                setBlinkLink(`${window.location.origin}/api/buyNFT/${data.result.list_state}`);
                 handleConfettiClick();
             }
             else {
@@ -380,9 +383,13 @@ export default function CreateBlink() {
                         <div className="pt-5 flex gap-4 items-center">
                             <Button
                                 variant="secondary"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(blinkLink as string);
+                                }}
                                 className="border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm font-Andvari"
                             >
-                                <NewTwitterIcon />
+                                Copy Link
+                                {/* <NewTwitterIcon /> */}
                             </Button>
                             <p className="font-normal text-sm font-Andvari">share on x!</p>
                         </div>
@@ -394,6 +401,7 @@ export default function CreateBlink() {
                                     setSelectedNFTDetails(null);
                                     setSelectedMode(null);
                                     setSelectedPrice(null);
+                                    setBlinkLink(null);
                                     setCurrentFormPage(1);
                                 }}
                                 variant="secondary"
