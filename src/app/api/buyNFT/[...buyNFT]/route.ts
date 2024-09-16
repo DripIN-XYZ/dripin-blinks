@@ -7,7 +7,6 @@ import {
 } from "@solana/actions";
 
 import {
-    Connection,
     Transaction,
 } from "@solana/web3.js";
 import axios from "axios";
@@ -15,16 +14,13 @@ import axios from "axios";
 import { buyNftType } from "@/types/buyNftType";
 import { listDetailsType } from "@/types/list_detailsType";
 
-// Configuration
 const MARKETPLACE_ADDRESS = "3mycE4xdRESBX8pchRTS2UfBChQnRgCU3GKvGTeZxLVH";
 const SHYFT_API_KEY = process.env.NEXT_PUBLIC_SHYFT_API_KEY;
-const SOLANA_RPC_URL = 'https://api.mainnet-beta.solana.com';
 
 if (!SHYFT_API_KEY) {
     throw new Error("NEXT_PUBLIC_SHYFT_API_KEY is not set in the environment variables");
 }
 
-// Helper functions
 const getListAddress = (url: string): string => {
     const listAddress = url.split("/").pop();
     if (!listAddress) {
@@ -75,8 +71,6 @@ const buyMarketplaceListing = async (nftData: listDetailsType, buyerAddress: str
             throw new Error("Encoded transaction not found in API response");
         }
 
-        console.log("Encoded transaction:", response.data.result.encoded_transaction);
-
         return response.data;
     } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -86,7 +80,6 @@ const buyMarketplaceListing = async (nftData: listDetailsType, buyerAddress: str
     }
 };
 
-// Main functions
 export async function GET(request: Request) {
     try {
         const url = new URL(request.url);
@@ -130,20 +123,9 @@ export async function POST(request: Request) {
         const buyerAddress = body.account;
         const nftData = await fetchNFTData(listAddress);
 
-        console.log("NFT Data:", nftData);
+        const encTx = await buyMarketplaceListing(nftData, buyerAddress);
 
-        const encodedTransaction = await buyMarketplaceListing(nftData, buyerAddress);
-
-        // const connection = new Connection(SOLANA_RPC_URL);
-        const transaction = Transaction.from(Buffer.from(encodedTransaction.result.encoded_transaction, 'base64'));
-
-        // const signature = await connection.sendRawTransaction(transaction.serialize(), {
-        //     skipPreflight: true,
-        // });
-
-        // await connection.confirmTransaction(signature, 'confirmed');
-
-        // let transactionObject: Transaction = transaction;
+        const transaction = Transaction.from(Buffer.from(encTx.result.encoded_transaction, 'base64'));
 
         const payload: ActionPostResponse = await createPostResponse({
             fields: {
