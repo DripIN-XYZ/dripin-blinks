@@ -66,16 +66,13 @@ export enum FileType {
 
 export default async function getTokens(wallet_address: string) {
     try {
-        const response: AxiosResponse<getTokenType[]> = await axios.request(
-            {
-                method: "GET",
-                url: `https://api-mainnet.magiceden.dev/v2/wallets/${wallet_address}/tokens`,
-                headers: {
-                    accept: "application/json",
-                    // authorization: `Bearer ${process.env.MAGIC_EDEN_API_KEY}`,
-                }
+        const response: AxiosResponse<getTokenType[]> = await axios.request({
+            method: "GET",
+            url: `/api/tokens/${wallet_address}`,
+            headers: {
+                accept: "application/json",
             }
-        );
+        });
         return response.data;
     } catch (error) {
         console.error(error);
