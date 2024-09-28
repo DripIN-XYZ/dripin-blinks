@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loading03Icon } from "hugeicons-react";
-// import { createWalletSignIn } from "@/lib/sanity";
+import { processWalletSignin } from "@/lib/supabase/walletSign";
 import { useWallet } from "@solana/wallet-adapter-react";
 import type { StandardWalletAdapter } from "@solana/wallet-adapter-base";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -19,6 +19,47 @@ export default function ConnectWallet() {
     const [selectedWalletOpen, setSelectedWalletOpen] = useState(false);
     const [selectedWallet, setSelectedWallet] = useState<selectedWalletTypes | undefined>();
     const { select, wallets, publicKey, disconnect, connecting, signIn, signMessage } = useWallet();
+
+    async function signAndSend() {
+        if (!publicKey) {
+            return;
+        }
+
+        const signInMessage = `
+Welcome to DripIn
+
+The genesis for simplifying NFT trading
+
+By signing this message you agree to the
+teams and conditions
+
+Date: 
+${new Date().toISOString()}
+
+publicKey: 
+${publicKey?.toBase58()}
+`;
+
+        const message = new TextEncoder().encode(signInMessage);
+        try {
+            const signature = await signMessage?.(message);
+            console.log(signature, publicKey);
+            if (!signature) {
+                disconnect();
+                return;
+            }
+            const signIn = await processWalletSignin(publicKey.toString(), "create_or_update");
+            console.log(signIn);
+        } catch (error) {
+            disconnect();
+            console.error(error);
+        }
+    }
+
+    useEffect(() => {
+        signAndSend();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [publicKey])
 
     return (
         <>
