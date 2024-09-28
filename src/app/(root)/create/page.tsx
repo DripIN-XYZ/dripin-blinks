@@ -151,9 +151,9 @@ export default function CreateBlink() {
                         <h1 className="text-5xl font-bold">Select Your NFT!</h1>
                         <h2 className="pt-2 text-xl font-normal text-black">Choose the NFT you want to list.</h2>
                         <ScrollArea className="pt-4 w-full h-[70vh] overflow-hidden">
-                            {tokens! === null ? (
+                            {tokens === null ? (
                                 <div className="grid grid-cols-3 max-lg:grid-cols-2 gap-4">
-                                    {new Array(8).fill(null).map((index) => (
+                                    {new Array(6).fill(null).map((index) => (
                                         <Button
                                             key={index}
                                             variant="secondary"
@@ -188,7 +188,7 @@ export default function CreateBlink() {
                                         </Button>
                                     ))}
                                 </div>
-                            ) : tokens.length === 0 ? (
+                            ) : tokens && tokens.length === 0 ? (
                                 <div>
                                     <p className="text-lg font-normal text-black">No NFTs found in your wallet</p>
                                 </div>
