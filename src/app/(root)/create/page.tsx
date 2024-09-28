@@ -6,12 +6,12 @@ import Header from "./_components/Header";
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import ConnectWallet from "@/components/wallet";
+import { Loading03Icon } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import Wrapper from "@/components/common/Wrapper";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Connection, Transaction } from '@solana/web3.js';
-import FlickeringGrid from "@/components/magicui/flickering-grid";
 import getTokens, { getTokenType } from "@/lib/MagicEden/getTokens";
 import FormPagination from "@/components/createBlink/formPagination";
 import { NextImageCollection, NextImageNft } from "@/components/NextImage";
@@ -117,9 +117,9 @@ export default function CreateBlink() {
         //         if (data) {
         //             const encTx = data.result.encoded_transaction;
         //             executeTransaction({ encTx });
-        //             setCurrentFormPage(currentFormPage + 1);
+                    setCurrentFormPage(currentFormPage + 1);
         //             setBlinkLink(`${window.location.origin}/api/buyNFT/${data.result.list_state}`);
-        //             handleConfettiClick();
+                    handleConfettiClick();
         //         }
         //         else {
         //             console.error("Error in transaction");
@@ -152,41 +152,8 @@ export default function CreateBlink() {
                         <h2 className="pt-2 text-xl font-normal text-black">Choose the NFT you want to list.</h2>
                         <ScrollArea className="pt-4 w-full h-[70vh] overflow-hidden">
                             {tokens === null ? (
-                                <div className="grid grid-cols-3 max-lg:grid-cols-2 gap-4">
-                                    {new Array(6).fill(null).map((index) => (
-                                        <Button
-                                            key={index}
-                                            variant="secondary"
-                                            className="h-fit border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm"
-                                        >
-                                            <div className="flex flex-col w-full h-fit gap-2 pt-2">
-                                                <div className="relative w-full h-full overflow-hidden aspect-square rounded-sm border-blue-600 border-2">
-                                                    <FlickeringGrid
-                                                        className="z-0 absolute inset-0 size-full"
-                                                        squareSize={4}
-                                                        gridGap={2}
-                                                        color="#0057FF"
-                                                        maxOpacity={0.5}
-                                                        flickerChance={0.1}
-                                                        height={256}
-                                                        width={256}
-                                                    />
-                                                </div>
-                                                <div className="relative w-full h-4 overflow-hidden rounded-sm">
-                                                    <FlickeringGrid
-                                                        className="z-0 absolute inset-0 size-full"
-                                                        squareSize={4}
-                                                        gridGap={2}
-                                                        color="#0057FF"
-                                                        maxOpacity={0.5}
-                                                        flickerChance={0.1}
-                                                        height={256}
-                                                        width={256}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </Button>
-                                    ))}
+                                <div className="w-full flex pt-16 justify-center items-center">
+                                    <Loading03Icon className="w-16 h-16 animate-spin text-blue-600" />
                                 </div>
                             ) : tokens === undefined ? (
                                 <div>
