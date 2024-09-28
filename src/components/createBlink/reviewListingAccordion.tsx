@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Item, Attribute } from "@/types/SearchAssetsType";
+import { getTokenType, Attribute, Creator } from "@/lib/MagicEden/getTokens";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Copy01Icon, CheckmarkSquare03Icon, ProfileIcon, UserMultipleIcon, Ticket02Icon, Tag01Icon } from "hugeicons-react";
 
@@ -73,8 +73,22 @@ const AttributeColumn = (
 }
 
 export default function ReviewListingAccordion(
-    { nftDetails, sellingPrice, selectedMode }: { nftDetails: Item, sellingPrice: number, selectedMode: string }
+    { nftDetails, sellingPrice, selectedMode }: { nftDetails: getTokenType, sellingPrice: number, selectedMode: string }
 ) {
+    let creators: Creator[] | undefined, attributes: Attribute[] | null;
+
+    if (nftDetails.properties?.creators === undefined) {
+        creators = undefined;
+    } else {
+        creators = nftDetails.properties?.creators;
+    }
+
+    if (nftDetails.attributes === null) {
+        attributes = null
+    } else {
+        attributes = nftDetails.attributes
+    }
+
     return (
         <>
             <Accordion
@@ -102,17 +116,12 @@ export default function ReviewListingAccordion(
                         <CopyButtonColumn
                             flip={true}
                             row1={<p className="uppercase font-normal text-blue-600">owner</p>}
-                            row2={nftDetails.ownership.owner}
+                            row2={nftDetails.owner}
                         />
                         <CopyButtonColumn
                             flip={true}
                             row1={<p className="uppercase font-normal text-blue-600">mint address</p>}
-                            row2={nftDetails.id.toString()}
-                        />
-                        <CopyButtonColumn
-                            flip={true}
-                            row1={<p className="uppercase font-normal text-blue-600">collection address</p>}
-                            row2={nftDetails.grouping[0].group_value}
+                            row2={nftDetails.mintAddress}
                         />
                     </AccordionContent>
                 </AccordionItem>
@@ -126,7 +135,7 @@ export default function ReviewListingAccordion(
                     </AccordionTrigger>
                     <AccordionContent className="flex flex-col w-full gap-1">
                         {
-                            nftDetails.creators.map((creator, index) => {
+                            creators && creators.length > 0 ? creators.map((creator, index) => {
                                 return (
                                     <CopyButtonColumn
                                         flip={false}
@@ -139,8 +148,8 @@ export default function ReviewListingAccordion(
                                         }
                                         row2={creator.address}
                                     />
-                                );
-                            })
+                                )
+                            }) : ("No Creators Found")
                         }
                     </AccordionContent>
                 </AccordionItem>
@@ -153,29 +162,18 @@ export default function ReviewListingAccordion(
                     </AccordionTrigger>
                     <AccordionContent className="grid grid-cols-2 w-full gap-1">
                         {
-                            nftDetails.content.metadata.attributes.map((attribute, index) => {
+                            attributes && attributes.length > 0 ? attributes.map((attribute, index) => {
                                 return (
                                     <AttributeColumn
                                         key={index}
                                         attribute={attribute}
                                     />
-                                );
-                            })
+                                )
+                            }) : ("No Attributes Found")
                         }
                     </AccordionContent>
                 </AccordionItem>
             </Accordion >
-            {/* <div className="flex flex-col w-full">
-                <pre>
-                    Selling Price: {sellingPrice} SOL
-                </pre>
-                <pre>
-                    Mode: {selectedMode}
-                </pre>
-                <pre>
-                    {JSON.stringify(nftDetails, null, 2)}
-                </pre>
-            </div> */}
         </>
     );
 }
