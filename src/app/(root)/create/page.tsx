@@ -188,7 +188,11 @@ export default function CreateBlink() {
                                         </Button>
                                     ))}
                                 </div>
-                            ) : tokens && tokens.length === 0 ? (
+                            ) : tokens === undefined ? (
+                                <div>
+                                    <p className="text-lg font-normal text-black">Application Error</p>
+                                </div>
+                            ) : tokens.length === 0 ? (
                                 <div>
                                     <p className="text-lg font-normal text-black">No NFTs found in your wallet</p>
                                 </div>
