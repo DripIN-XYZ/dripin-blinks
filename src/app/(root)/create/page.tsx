@@ -16,6 +16,7 @@ import getTokens, { getTokenType } from "@/lib/MagicEden/getTokens";
 import FormPagination from "@/components/createBlink/formPagination";
 import { NextImageCollection, NextImageNft } from "@/components/NextImage";
 import ReviewListingAccordion from "@/components/createBlink/reviewListingAccordion";
+import encTxListNFT from "@/lib/shyft/listNft";
 
 export default function CreateBlink() {
     const { publicKey, signTransaction, sendTransaction, connected, disconnecting } = useWallet();
@@ -108,26 +109,48 @@ export default function CreateBlink() {
     };
 
     const handleTransectionClick = () => {
-        //     encTxListNFT({
-        //         nft_address: selectedNFTDetails?.id as string,
-        //         price: selectedPrice as number,
-        //         seller_wallet: publicKey?.toString() as string
-        //     }).then((data) => {
-        //         console.log("DATA", data);
-        //         if (data) {
-        //             const encTx = data.result.encoded_transaction;
-        //             executeTransaction({ encTx });
-                    setCurrentFormPage(currentFormPage + 1);
-        //             setBlinkLink(`${window.location.origin}/api/buyNFT/${data.result.list_state}`);
-                    handleConfettiClick();
-        //         }
-        //         else {
-        //             console.error("Error in transaction");
-        //         }
-        //     }).catch(
-        //         console.error
-        //     );
+        encTxListNFT({
+            nft_address: selectedNFTDetails?.mintAddress as string,
+            price: selectedPrice as number,
+            seller_wallet: publicKey?.toString() as string
+        }).then((data) => {
+            console.log("DATA", data);
+            if (data) {
+                const encTx = data.result.encoded_transaction;
+                executeTransaction({ encTx });
+                setCurrentFormPage(currentFormPage + 1);
+                setBlinkLink(`${window.location.origin}/api/buyNFT/${data.result.list_state}`);
+                handleConfettiClick();
+            }
+            else {
+                console.error("Error in transaction");
+            }
+        }).catch(
+            console.error
+        );
     };
+
+    // const handleTransectionClick = () => {
+    //     encTxListNFT({
+    //         nft_address: selectedNFTDetails?.id as string,
+    //         price: selectedPrice as number,
+    //         seller_wallet: publicKey?.toString() as string
+    //     }).then((data) => {
+    //         console.log("DATA", data);
+    //         if (data) {
+    //             const encTx = data.result.encoded_transaction;
+    //             executeTransaction({ encTx });
+    // setCurrentFormPage(currentFormPage + 1);
+    //             setBlinkLink(`${window.location.origin}/api/buyNFT/${data.result.list_state}`);
+    // handleConfettiClick();
+    //         }
+    //         else {
+    //             console.error("Error in transaction");
+    //         }
+    //     }).catch(
+    //         console.error
+    //     );
+    // };
 
     const renderFormSection = (currentFormPage: number) => {
         switch (currentFormPage) {
