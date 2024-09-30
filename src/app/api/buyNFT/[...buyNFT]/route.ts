@@ -88,7 +88,9 @@ export async function GET(request: Request) {
 
         let payload: ActionGetResponse;
 
-        if (nftData.result.purchase_receipt !== null) {
+        const soldNft: boolean = nftData.result.purchase_receipt !== null || nftData.result.purchase_receipt !== undefined;
+
+        if (!soldNft) {
             payload = {
                 icon: `https://image.dripin.xyz/api/resize?url=${nftData.result.nft.image_uri}&width=512&height=512`,
                 title: nftData.result.nft.name,

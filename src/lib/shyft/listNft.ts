@@ -1,23 +1,35 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 
-export const encTxListNFT = async (
-    {
-        nft_address,
-        price,
-        seller_wallet
-    }: {
-        nft_address: string,
-        price: number,
-        seller_wallet: string
-    }): Promise<any> => {
+export interface listNftType {
+    success: boolean;
+    message: string;
+    result: Result;
+}
+
+export interface Result {
+    network: string;
+    marketplace_address: string;
+    seller_address: string;
+    price: number;
+    nft_address: string;
+    list_state: string;
+    currency_symbol: string;
+    encoded_transaction: string;
+}
+
+export default async function encTxListNFT({ nft_address, price, seller_wallet }: {
+    nft_address: string,
+    price: number,
+    seller_wallet: string
+}) {
     try {
-        const response = await axios.post("https://api.shyft.to/sol/v1/marketplace/list",
+        const response: AxiosResponse<listNftType> = await axios.post("https://api.shyft.to/sol/v1/marketplace/list",
             {
-                network: "mainnet-beta",    // either of [mainnet-beta, testnet, devnet]
-                nft_address: nft_address,    // on-chain address of the NFT which has to be listed for sale.
-                marketplace_address: "3mycE4xdRESBX8pchRTS2UfBChQnRgCU3GKvGTeZxLVH",   // the address of the marketplace.
-                price: price,   // sale price of the NFT in SOL.
-                seller_wallet: seller_wallet    // wallet address of the NFT owner who wants to sell the NFT.
+                network: "mainnet-beta",
+                nft_address: nft_address,
+                marketplace_address: "3mycE4xdRESBX8pchRTS2UfBChQnRgCU3GKvGTeZxLVH",
+                price: price,
+                seller_wallet: seller_wallet
             },
             {
                 headers: {
