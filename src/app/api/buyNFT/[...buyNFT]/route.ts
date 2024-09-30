@@ -88,7 +88,11 @@ export async function GET(request: Request) {
 
         let payload: ActionGetResponse;
 
-        const soldNft: boolean = nftData.result.purchase_receipt !== null || nftData.result.purchase_receipt !== undefined;
+        const soldNft: boolean = nftData.result.purchase_receipt !== null || nftData.result.purchase_receipt !== undefined ? false : true;
+
+        console.log("NFT Data:", nftData);
+        console.log("Sold NFT:", nftData.result.purchase_receipt);
+        console.log("NFT Data:", soldNft);
 
         if (!soldNft) {
             payload = {
