@@ -12,32 +12,29 @@ export default function Home() {
             header={<Header />}
             footer={<></>}
         >
-            <div className="flex size-full items-center">
+            <div className="flex size-full items-center px-4 sm:px-8 lg:px-16">
                 <div className="relative size-full">
                     <div className="absolute size-full pointer-events-none">
-                        <div className="size-full flex justify-center items-center overflow-hidden">
+                        {/* <div className="size-full flex justify-center items-center overflow-hidden">
                             <DotPattern />
-                        </div>
+                        </div> */}
                     </div>
                     <div className="flex size-full flex-col justify-center items-center text-center">
-                        <h1 className="text-6xl font-bold">
+                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold">
                             <span className="text-blue-600">Create </span>
                             and
                             <span className="text-blue-600"> Share </span>
-                            Digital <br /> Collectibles with Blinks on Solana.
+                            Digital <br className="hidden sm:inline-block" /> Collectibles with Blinks on Solana.
                         </h1>
-                        <p className="text-lg font-normal my-6">
+                        <p className="text-base sm:text-lg font-normal my-4 sm:my-6">
                             Create, showcase, and securely share your unique digital assets in form of blinks.
                         </p>
                         <Button
                             asChild
                             variant="secondary"
-                            className="border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm font-Andvari"
+                            className="border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-xs sm:text-sm font-Andvari"
                         >
-                            <Link
-                                href="/create"
-                                className="flex gap-2 items-center"
-                            >
+                            <Link href="/create" className="flex gap-1 sm:gap-2 items-center">
                                 Create Your First Blink
                                 <ArrowRight02Icon />
                             </Link>
