@@ -149,7 +149,13 @@ ${publicKey?.toBase58()}
                                         <DialogDescription>
                                             Connected to {publicKey.toBase58()}
                                         </DialogDescription>
-                                        <Button className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-base font-Andvari" onClick={disconnect}>
+                                        <Button
+                                            onClick={() => {
+                                                setwalletSignIn(false);
+                                                disconnect();
+                                            }}
+                                            className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-base font-Andvari"
+                                        >
                                             Disconnect
                                         </Button>
                                     </div>
