@@ -21,13 +21,13 @@ export default function Home() {
                         </div>
                     </div>
                     <div className="flex size-full flex-col justify-center items-center text-center">
-                        <h1 className="text-6xl font-bold">
+                        <h1 className="text-2xl sm:text-5xl lg:text-6xl font-bold">
                             <span className="text-blue-600">Create </span>
                             and
                             <span className="text-blue-600"> Share </span>
                             Digital <br /> Collectibles with Blinks on Solana.
                         </h1>
-                        <p className="text-lg font-normal my-6">
+                        <p className="text-sm sm:text-lg font-normal my-4 sm:my-6 max-w-2xl">
                             Create, showcase, and securely share your unique digital assets in form of blinks.
                         </p>
                         <Button
