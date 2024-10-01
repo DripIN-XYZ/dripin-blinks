@@ -17,6 +17,7 @@ import FormPagination from "@/components/createBlink/formPagination";
 import { NextImageCollection, NextImageNft } from "@/components/NextImage";
 import ReviewListingAccordion from "@/components/createBlink/reviewListingAccordion";
 import encTxListNFT from "@/lib/shyft/listNft";
+import React from "react";
 
 export default function CreateBlink() {
     const { publicKey, signTransaction, sendTransaction, connected, disconnecting } = useWallet();
@@ -82,10 +83,10 @@ export default function CreateBlink() {
         }, 250);
     };
 
-    const executeTransaction = async ({ encTx }: { encTx: string }) => {
+    const executeTransaction = async ({ encTx }: { encTx: string }): Promise<boolean> => {
         if (!connected) {
             console.error('Wallet not connected or no transaction to execute');
-            return;
+            return false;
         }
 
         try {
@@ -99,12 +100,14 @@ export default function CreateBlink() {
                 const signature = await sendTransaction(signedTransaction, connection);
                 const confirmation = await connection.confirmTransaction(signature);
                 console.log('Transaction confirmed:', confirmation);
+                return true;
             } else {
                 console.error('signTransaction is not defined');
-                return;
+                return false;
             }
         } catch (error) {
             console.error('Error executing transaction:', error);
+            return false;
         }
     };
 
@@ -113,14 +116,19 @@ export default function CreateBlink() {
             nft_address: selectedNFTDetails?.mintAddress as string,
             price: selectedPrice as number,
             seller_wallet: publicKey?.toString() as string
-        }).then((data) => {
+        }).then(async (data) => {
             console.log("DATA", data);
             if (data) {
                 const encTx = data.result.encoded_transaction;
-                executeTransaction({ encTx });
-                setCurrentFormPage(currentFormPage + 1);
-                setBlinkLink(`${window.location.origin}/api/buyNFT/${data.result.list_state}`);
-                handleConfettiClick();
+                const executeTx = executeTransaction({ encTx });
+                if (await executeTx) {
+                    console.log("Transaction executed successfully");
+                    setCurrentFormPage(currentFormPage + 1);
+                    setBlinkLink(`https://dial.to/?action=solana-action:${window.location.origin}/api/buyNFT/${data.result.list_state}`);
+                    handleConfettiClick();
+                } else {
+                    console.error("Error executing transaction");
+                }
             }
             else {
                 console.error("Error in transaction");
@@ -129,28 +137,6 @@ export default function CreateBlink() {
             console.error
         );
     };
-
-    // const handleTransectionClick = () => {
-    //     encTxListNFT({
-    //         nft_address: selectedNFTDetails?.id as string,
-    //         price: selectedPrice as number,
-    //         seller_wallet: publicKey?.toString() as string
-    //     }).then((data) => {
-    //         console.log("DATA", data);
-    //         if (data) {
-    //             const encTx = data.result.encoded_transaction;
-    //             executeTransaction({ encTx });
-    // setCurrentFormPage(currentFormPage + 1);
-    //             setBlinkLink(`${window.location.origin}/api/buyNFT/${data.result.list_state}`);
-    // handleConfettiClick();
-    //         }
-    //         else {
-    //             console.error("Error in transaction");
-    //         }
-    //     }).catch(
-    //         console.error
-    //     );
-    // };
 
     const renderFormSection = (currentFormPage: number) => {
         switch (currentFormPage) {

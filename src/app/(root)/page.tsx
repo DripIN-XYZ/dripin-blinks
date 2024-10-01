@@ -8,6 +8,7 @@ import { ArrowRight02Icon } from "hugeicons-react";
 import DotPattern from "@/components/magicui/dot-pattern";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import React from "react";
 
 export default function Home() {
     const [windowWidth, setWindowWidth] = useState<number | null>(null);
@@ -63,8 +64,7 @@ export default function Home() {
                     </div>
                 </div>
                 {/* How DripIn Works Section */}
-                <div className="flex flex-col justify-center gap-4 sm:gap-6 lg:gap-8 items-center">
-                    {/* Heading */}
+                {/* <div className="flex flex-col justify-center gap-4 sm:gap-6 lg:gap-8 items-center">
                     <div className="flex flex-col size-full gap-3 justify-center text-center">
                         <h1 className="font-Andvari text-blue-600 text-sm sm:text-base lg:text-lg">
                             &#91;Ship Faster&#93;
@@ -90,8 +90,7 @@ export default function Home() {
                             className="w-full"
                         />
                     )}
-                </div>
-
+                </div> */}
             </div>
         </Wrapper>
     );
