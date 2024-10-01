@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/common/Header";
@@ -5,8 +7,25 @@ import Wrapper from "@/components/common/Wrapper";
 import { ArrowRight02Icon } from "hugeicons-react";
 import DotPattern from "@/components/magicui/dot-pattern";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 
 export default function Home() {
+    const [windowWidth, setWindowWidth] = useState<number | null>(null);
+
+    useEffect(() => {
+        // Only run this effect client-side
+        if (typeof window !== 'undefined') {
+            const handleResize = () => setWindowWidth(window.innerWidth);
+            window.addEventListener('resize', handleResize);
+
+            // Call the handleResize function immediately
+            handleResize();
+
+            // Cleanup the event listener on component unmount
+            return () => window.removeEventListener('resize', handleResize);
+        }
+    }, []);
+
 
     return (
         <Wrapper
@@ -54,13 +73,23 @@ export default function Home() {
                             Effortlessly Create Your Blink From Your Digital Collectibles
                         </h2>
                     </div>
-                    <Image
-                        width={1184}
-                        height={564}
-                        src="/cdn/homepage/Working Illustration.png"
-                        alt="Working Image"
-                        className="w-full"
-                    />
+                    {windowWidth && windowWidth > 640 ? (
+                        <Image
+                            width={1184}
+                            height={564}
+                            src="/cdn/homepage/Working Illustration.png"
+                            alt="Working Image"
+                            className="w-full"
+                        />
+                    ) : (
+                        <Image
+                            width={360}
+                            height={450}
+                            src="/cdn/homepage/Working_Mobile Ilustration.png"
+                            alt="Working Image"
+                            className="w-full"
+                        />
+                    )}
                 </div>
 
             </div>
