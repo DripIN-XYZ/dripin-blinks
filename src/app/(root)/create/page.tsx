@@ -1,58 +1,42 @@
 "use client";
 
+import React from "react";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
 import Header from "./_components/Header";
 import { useEffect, useState } from "react";
+import fetchTokens from "@/lib/searchAssets";
 import { Input } from "@/components/ui/input";
 import ConnectWallet from "@/components/wallet";
-import { Loading03Icon } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
+import { NewTwitterIcon } from "hugeicons-react";
 import Wrapper from "@/components/common/Wrapper";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Connection, Transaction } from '@solana/web3.js';
-import getTokens, { getTokenType } from "@/lib/MagicEden/getTokens";
+import FlickeringGrid from "@/components/magicui/flickering-grid";
 import FormPagination from "@/components/createBlink/formPagination";
 import { NextImageCollection, NextImageNft } from "@/components/NextImage";
 import ReviewListingAccordion from "@/components/createBlink/reviewListingAccordion";
-import encTxListNFT from "@/lib/shyft/listNft";
-import React from "react";
+import searchAssets, { getSearchAssetsType, Collectible } from "@/lib/phantom/searchAssets";
 
 export default function CreateBlink() {
     const { publicKey, signTransaction, sendTransaction, connected, disconnecting } = useWallet();
     const [currentFormPage, setCurrentFormPage] = useState<number>(1);
-    const formPage = Array.from({ length: 7 }, (_, i) => i + 1);
+    const formPage = Array.from({ length: 8 }, (_, i) => i + 1);
 
-    const [tokens, setTokens] = useState<getTokenType[] | null>(null);
+    const [tokens, setTokens] = useState<getSearchAssetsType | null>();
+    const [collectionDetails, setCollectionDetails] = useState<Collectible[]>([]);
 
-    const [selectedNFTDetails, setSelectedNFTDetails] = useState<getTokenType | null>(null);
+    const [selectedCollectionAddress, setSelectedCollectionAddress] = useState<string>("");
+    const [specificCollectionDetails, setSpecificCollectionDetails] = useState<Collectible[] | null>(null);
+
+    const [selectedNFTDetails, setSelectedNFTDetails] = useState<Collectible | null>(null);
 
     const [selectedMode, setSelectedMode] = useState<"SELL_NFT" | "AUCTION_NFT" | null>(null);
     const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
 
     const [blinkLink, setBlinkLink] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (publicKey) {
-            setCurrentFormPage(2);
-        }
-        if (disconnecting) {
-            setCurrentFormPage(1);
-        }
-    }, [publicKey, disconnecting]);
-
-    useEffect(() => {
-        if (publicKey) {
-            const walletAddress = publicKey.toString();
-            getTokens(walletAddress).then((data) => {
-                setTokens((data as unknown) as getTokenType[]);
-            }).catch(console.error);
-        }
-        else {
-            setTokens(null);
-        }
-    }, [publicKey])
 
     const handleConfettiClick = () => {
         const duration = 5 * 1000;
@@ -83,10 +67,10 @@ export default function CreateBlink() {
         }, 250);
     };
 
-    const executeTransaction = async ({ encTx }: { encTx: string }): Promise<boolean> => {
+    const executeTransaction = async ({ encTx }: { encTx: string }) => {
         if (!connected) {
             console.error('Wallet not connected or no transaction to execute');
-            return false;
+            return;
         }
 
         try {
@@ -100,42 +84,35 @@ export default function CreateBlink() {
                 const signature = await sendTransaction(signedTransaction, connection);
                 const confirmation = await connection.confirmTransaction(signature);
                 console.log('Transaction confirmed:', confirmation);
-                return true;
             } else {
                 console.error('signTransaction is not defined');
-                return false;
+                return;
             }
         } catch (error) {
             console.error('Error executing transaction:', error);
-            return false;
         }
     };
 
     const handleTransectionClick = () => {
-        encTxListNFT({
-            nft_address: selectedNFTDetails?.mintAddress as string,
-            price: selectedPrice as number,
-            seller_wallet: publicKey?.toString() as string
-        }).then(async (data) => {
-            console.log("DATA", data);
-            if (data) {
-                const encTx = data.result.encoded_transaction;
-                const executeTx = executeTransaction({ encTx });
-                if (await executeTx) {
-                    console.log("Transaction executed successfully");
-                    setCurrentFormPage(currentFormPage + 1);
-                    setBlinkLink(`https://dial.to/?action=solana-action:${window.location.origin}/api/buyNFT/${data.result.list_state}`);
-                    handleConfettiClick();
-                } else {
-                    console.error("Error executing transaction");
-                }
-            }
-            else {
-                console.error("Error in transaction");
-            }
-        }).catch(
-            console.error
-        );
+        // encTxListNFT({
+        //     nft_address: selectedNFTDetails?.id as string,
+        //     price: selectedPrice as number,
+        //     seller_wallet: publicKey?.toString() as string
+        // }).then((data) => {
+        //     console.log("DATA", data);
+        //     if (data) {
+        //         const encTx = data.result.encoded_transaction;
+        //         executeTransaction({ encTx });
+        setCurrentFormPage(currentFormPage + 1);
+        // setBlinkLink(`${window.location.origin}/api/buyNFT/${data.result.list_state}`);
+        handleConfettiClick();
+        //     }
+        //     else {
+        //         console.error("Error in transaction");
+        //     }
+        // }).catch(
+        //     console.error
+        // );
     };
 
     const renderFormSection = (currentFormPage: number) => {
@@ -157,28 +134,60 @@ export default function CreateBlink() {
             case 2:
                 return (
                     <div className="h-full flex flex-col justify-center">
-                        <h1 className="text-5xl font-bold">Select Your NFT!</h1>
-                        <h2 className="pt-2 text-xl font-normal text-black">Choose the NFT you want to list.</h2>
+                        <h1 className="text-5xl font-bold">Select a Collection</h1>
+                        <h2 className="pt-2 text-xl font-normal text-black">Choose the collection you want to list an NFT from.</h2>
                         <ScrollArea className="pt-4 w-full h-[70vh] overflow-hidden">
                             {tokens === null ? (
-                                <div className="w-full flex pt-16 justify-center items-center">
-                                    <Loading03Icon className="w-16 h-16 animate-spin text-blue-600" />
+                                <div className="grid grid-cols-3 max-lg:grid-cols-2 gap-4">
+                                    {new Array(6).fill(null).map((index) => (
+                                        <Button
+                                            key={index}
+                                            variant="secondary"
+                                            className="h-fit border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm"
+                                        >
+                                            <div className="flex flex-col w-full h-fit gap-2 pt-2">
+                                                <div className="relative w-full h-full overflow-hidden aspect-square rounded-sm border-blue-600 border-2">
+                                                    <FlickeringGrid
+                                                        className="z-0 absolute inset-0 size-full"
+                                                        squareSize={4}
+                                                        gridGap={2}
+                                                        color="#0057FF"
+                                                        maxOpacity={0.5}
+                                                        flickerChance={0.1}
+                                                        height={256}
+                                                        width={256}
+                                                    />
+                                                </div>
+                                                <div className="relative w-full h-4 overflow-hidden rounded-sm">
+                                                    <FlickeringGrid
+                                                        className="z-0 absolute inset-0 size-full"
+                                                        squareSize={4}
+                                                        gridGap={2}
+                                                        color="#0057FF"
+                                                        maxOpacity={0.5}
+                                                        flickerChance={0.1}
+                                                        height={256}
+                                                        width={256}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </Button>
+                                    ))}
                                 </div>
-                            ) : tokens === undefined ? (
+                            ) : tokens?.collectibles.length === 0 ? (
                                 <div>
-                                    <p className="text-lg font-normal text-black">Application Error</p>
-                                </div>
-                            ) : tokens.length === 0 ? (
-                                <div>
-                                    <p className="text-lg font-normal text-black">No NFTs found in your wallet</p>
+                                    <p className="text-lg font-normal text-black">No Collection found in your wallet</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-3 max-lg:grid-cols-2 gap-4">
-                                    {tokens && tokens.map((token, index) => (
+                                    {collectionDetails && collectionDetails.map((collection, index) => (
                                         <Button
                                             key={index}
                                             onClick={() => {
-                                                setSelectedNFTDetails(token);
+                                                setSelectedCollectionAddress(collection.collection.id);
+                                                if (selectedNFTDetails !== null) {
+                                                    setSelectedNFTDetails(null);
+                                                }
                                                 setCurrentFormPage(currentFormPage + 1)
                                             }}
                                             variant="secondary"
@@ -186,13 +195,13 @@ export default function CreateBlink() {
                                         >
                                             <div className="flex flex-col w-full h-fit gap-2 pt-2">
                                                 <NextImageCollection
-                                                    src={token.image}
-                                                    alt={token.name}
+                                                    src={collection.collection.imageUrl}
+                                                    alt={collection.collection.name}
                                                     width={192}
                                                     height={192}
                                                     className="aspect-square object-contain w-full h-full rounded-sm border-blue-600 border-2"
                                                 />
-                                                <p className="w-full text-sm truncate">{token.name}</p>
+                                                <p className="w-full text-sm truncate">{collection.collection.name}</p>
                                             </div>
                                         </Button>
                                     ))}
@@ -203,6 +212,44 @@ export default function CreateBlink() {
                 );
 
             case 3:
+                return (
+                    <div className="h-full flex flex-col justify-center">
+                        <h1 className="text-5xl font-bold">Select Your NFT!</h1>
+                        <h2 className="pt-2 text-xl font-normal text-black">{`Choose the NFT you want to list from `}
+                            <strong>
+                                {specificCollectionDetails && specificCollectionDetails[0].collection.name}.
+                            </strong>
+                        </h2>
+                        <ScrollArea className="pt-4 w-full h-[70vh] overflow-hidden">
+                            <div className="grid grid-cols-3 max-lg:grid-cols-2 gap-4">
+                                {specificCollectionDetails && specificCollectionDetails.map((nft, index) => (
+                                    <Button
+                                        key={index}
+                                        onClick={() => {
+                                            setSelectedNFTDetails(nft);
+                                            setCurrentFormPage(currentFormPage + 1)
+                                        }}
+                                        variant="secondary"
+                                        className="h-fit border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm"
+                                    >
+                                        <div className="flex flex-col w-full h-fit gap-2 pt-2">
+                                            <NextImageNft
+                                                src={nft.media.previews.medium}
+                                                alt={nft.name}
+                                                width={192}
+                                                height={192}
+                                                className="aspect-square object-contain w-full h-full rounded-sm border-blue-600 border-2"
+                                            />
+                                            <p className="w-full text-sm truncate">{nft.name}</p>
+                                        </div>
+                                    </Button>
+                                ))}
+                            </div>
+                        </ScrollArea>
+                    </div>
+                );
+
+            case 4:
                 return (
                     <div className="h-full flex flex-col justify-center">
                         <h1 className="text-5xl font-bold">Choose mode</h1>
@@ -251,7 +298,7 @@ export default function CreateBlink() {
                     </div>
                 );
 
-            case 4:
+            case 5:
                 return (
                     <div className="h-full flex flex-col justify-center">
                         <h1 className="text-5xl font-bold">Set Price</h1>
@@ -278,7 +325,7 @@ export default function CreateBlink() {
                     </div>
                 );
 
-            case 5:
+            case 6:
                 return (
                     <div className="h-full flex flex-col justify-center">
                         <h1 className="text-5xl font-bold">Review Listing</h1>
@@ -295,7 +342,7 @@ export default function CreateBlink() {
                     </div>
                 );
 
-            case 6:
+            case 7:
                 return (
                     <div className="h-full flex flex-col justify-center">
                         <h1 className="text-5xl font-bold">Claim Your Blink</h1>
@@ -303,6 +350,8 @@ export default function CreateBlink() {
                         <div className="pt-5 flex gap-4 items-center">
                             <Button
                                 onClick={() => {
+                                    setSelectedCollectionAddress("");
+                                    setSpecificCollectionDetails(null);
                                     setSelectedNFTDetails(null);
                                     setSelectedMode(null);
                                     setSelectedPrice(null);
@@ -326,7 +375,7 @@ export default function CreateBlink() {
                     </div>
                 );
 
-            case 7:
+            case 8:
                 return (
                     <div className="h-full flex flex-col justify-center">
                         <h1 className="text-5xl font-bold">Share Your Blink!</h1>
@@ -347,6 +396,8 @@ export default function CreateBlink() {
                         <div className="pt-5 flex gap-4 items-center">
                             <Button
                                 onClick={() => {
+                                    setSelectedCollectionAddress("");
+                                    setSpecificCollectionDetails(null);
                                     setSelectedNFTDetails(null);
                                     setSelectedMode(null);
                                     setSelectedPrice(null);
@@ -375,11 +426,17 @@ export default function CreateBlink() {
 
     const renderBlinkSection = (
         {
-            nftDetails, sellingMode, defaultPrice
+            collectionDetails, nftDetails, sellingMode, defaultPrice
         }: {
+            collectionDetails?: {
+                collectionImage: string | null,
+                collectionName: string | null,
+                collectionDescription: string | null,
+            };
             nftDetails?: {
                 nftImage: string | null,
                 nftName: string | null,
+                nftDescription: string | null,
             };
             sellingMode?: "SELL_NFT" | "AUCTION_NFT" | null;
             defaultPrice?: number | null;
@@ -388,29 +445,90 @@ export default function CreateBlink() {
         return (
             <div className="w-full">
                 {
-                    nftDetails?.nftName && nftDetails.nftImage ? (
-                        <div className="p-4 flex flex-col w-full h-fit gap-2 rounded-lg border-2 border-blue-600">
-                            <NextImageCollection
-                                src={nftDetails.nftImage}
-                                alt={nftDetails.nftName}
-                                width={512}
-                                height={512}
-                                quality={50}
-                                className="aspect-square object-contain w-full rounded-sm border-blue-600 border-2"
-                            />
-                            <p className="w-full text-sm text-balance">{nftDetails.nftName}</p>
-                        </div>
-                    ) : (
-                        <></>
-                    )
+                    collectionDetails?.collectionName && collectionDetails.collectionImage && collectionDetails.collectionDescription ?
+                        nftDetails?.nftName && nftDetails.nftImage && nftDetails.nftDescription ? (
+                            <div className="p-4 flex flex-col w-full h-fit gap-2 rounded-lg border-2 border-blue-600">
+                                <NextImageCollection
+                                    src={nftDetails.nftImage}
+                                    alt={nftDetails.nftName}
+                                    width={512}
+                                    height={512}
+                                    quality={50}
+                                    className="aspect-square object-contain w-full rounded-sm border-blue-600 border-2"
+                                />
+                                <p className="w-full text-sm text-balance">{nftDetails.nftDescription}</p>
+                            </div>
+                        ) : (
+                            <div className="p-4 flex flex-col w-full h-fit gap-2 rounded-lg border-2 border-blue-600">
+                                <NextImageNft
+                                    src={collectionDetails.collectionImage}
+                                    alt={collectionDetails.collectionName}
+                                    width={512}
+                                    height={512}
+                                    quality={50}
+                                    className="aspect-square object-contain w-full rounded-sm border-blue-600 border-2"
+                                />
+                                <p className="w-full text-sm text-balance">{collectionDetails.collectionDescription}</p>
+                            </div>
+                        ) : (
+                            <></>
+                        )
                 }
             </div>
         )
     };
 
+    useEffect(() => {
+        if (publicKey) {
+            setCurrentFormPage(2);
+        }
+        if (disconnecting) {
+            setCurrentFormPage(1);
+        }
+    }, [publicKey, disconnecting]);
+
+    useEffect(() => {
+        if (publicKey) {
+            const walletAddress = publicKey.toString();
+            searchAssets(walletAddress).then((data) => {
+                setTokens((data as unknown) as getSearchAssetsType);
+            }).catch(console.error);
+        }
+        else {
+            setTokens(null);
+        }
+    }, [publicKey])
+
+    useEffect(() => {
+        const collectionMap = new Map<string, Collectible>();
+        if (!tokens) {
+            return;
+        }
+        tokens?.collectibles.forEach((nft) => {
+            const collection = nft.collection.id;
+            const isSpam: boolean = nft.collection.isSpam;
+            if (collection && !isSpam) {
+                collectionMap.set(collection, nft);
+            }
+        });
+        setCollectionDetails(Array.from(collectionMap.values()));
+    }, [tokens]);
+
+    useEffect(() => {
+        if (selectedCollectionAddress) {
+            if (tokens) {
+                const collectionNFTData = tokens.collectibles.filter((nft) => {
+                    const collection = nft.collection.id;
+                    return collection === selectedCollectionAddress;
+                });
+                setSpecificCollectionDetails((collectionNFTData as unknown) as Collectible[]);
+            }
+        }
+    }, [selectedCollectionAddress, tokens]);
+
     return (
         <Wrapper
-            header={<Header currentFormPage={currentFormPage} />}
+            header={<Header />}
             footer={<></>}
         >
             <div className="p-8 h-full grid grid-cols-2 max-lg:grid-cols-1 gap-8">
@@ -431,9 +549,15 @@ export default function CreateBlink() {
                     <div className="flex w-full aspect-square bg-blue-100 rounded-md justify-center items-center">
                         <div className="flex w-1/2">
                             {renderBlinkSection({
+                                collectionDetails: {
+                                    collectionImage: specificCollectionDetails && specificCollectionDetails[0].collection.imageUrl,
+                                    collectionName: specificCollectionDetails && specificCollectionDetails[0].collection.name,
+                                    collectionDescription: specificCollectionDetails && specificCollectionDetails[0].collection.description!
+                                },
                                 nftDetails: {
-                                    nftImage: selectedNFTDetails && selectedNFTDetails.image,
+                                    nftImage: selectedNFTDetails && selectedNFTDetails.media.previews.medium,
                                     nftName: selectedNFTDetails && selectedNFTDetails.name,
+                                    nftDescription: selectedNFTDetails && selectedNFTDetails.description!
                                 },
                                 sellingMode: selectedMode,
                                 defaultPrice: selectedPrice

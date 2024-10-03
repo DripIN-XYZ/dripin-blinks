@@ -1,13 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import ConnectWallet from "@/components/wallet";
-import { useWallet } from "@solana/wallet-adapter-react";
 
-export default function Header(
-    { currentFormPage }: { currentFormPage: number }
-) {
-    const { publicKey } = useWallet();
-
+export default function Header() {
     return (
         <header className="px-5 w-full flex items-center justify-between">
             <Link href="/" className="flex gap-px items-center">
@@ -20,7 +14,7 @@ export default function Header(
                 />
                 <h1 className="text-2xl text-blue-600 font-Andvari font-normal">ripin</h1>
             </Link>
-            {currentFormPage === 1 ? <div /> : <ConnectWallet />}
+            <div />
         </header>
     );
 }
