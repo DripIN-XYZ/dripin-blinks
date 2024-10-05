@@ -183,23 +183,36 @@ export async function GET(request: Request) {
             return new Response("NFT not found", { status: 404 });
         }
 
-        payload = {
-            icon: `https://image.dripin.xyz/api/resize?url=${nftData.imageUri}&width=1080&height=1080`,
-            title: `${nftData.name}`,
-            description: `${nftData.compressed ? "Compressed" : "Standard"} - ${nftData.tokenStandard}`,
-            label: `Buy NFT ${parseInt(nftData.listing.price) / LAMPORTS_PER_SOL} SOL`,
-            links: {
-                actions: [
-                    {
-                        label: `Buy NFT ${parseInt(nftData.listing.price) / LAMPORTS_PER_SOL} SOL`,
-                        href: `${url.href}`,
-                    },
-                ],
-            },
-        };
-        return Response.json(payload, {
-            headers: ACTIONS_CORS_HEADERS,
-        });
+        if (nftData.listing.price === null) {
+            payload = {
+                icon: `https://image.dripin.xyz/api/resize?url=${nftData.imageUri}&width=1080&height=1080`,
+                title: `${nftData.name}`,
+                description: `${nftData.compressed ? "Compressed" : "Standard"} - ${nftData.tokenStandard}`,
+                label: `NFT not for sale`,
+            };
+            return Response.json(payload, {
+                headers: ACTIONS_CORS_HEADERS,
+            });
+
+        } else {
+            payload = {
+                icon: `https://image.dripin.xyz/api/resize?url=${nftData.imageUri}&width=1080&height=1080`,
+                title: `${nftData.name}`,
+                description: `${nftData.compressed ? "Compressed" : "Standard"} - ${nftData.tokenStandard}`,
+                label: `Buy NFT ${parseInt(nftData.listing.price) / LAMPORTS_PER_SOL} SOL`,
+                links: {
+                    actions: [
+                        {
+                            label: `Buy NFT ${parseInt(nftData.listing.price) / LAMPORTS_PER_SOL} SOL`,
+                            href: `${url.href}`,
+                        },
+                    ],
+                },
+            };
+            return Response.json(payload, {
+                headers: ACTIONS_CORS_HEADERS,
+            });
+        }
     } catch (error) {
         return new Response("Error fetching NFT metadata", { status: 500 });
     }
