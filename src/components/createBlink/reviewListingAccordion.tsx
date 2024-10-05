@@ -74,7 +74,7 @@ const AttributeColumn = (
 }
 
 export default function ReviewListingAccordion(
-    { nftDetails, sellingPrice, selectedMode }: { nftDetails: Collectible, sellingPrice: number, selectedMode: string }
+    { nftDetails, sellingPrice, selectedMode, auctionDuration }: { nftDetails: Collectible, sellingPrice: number, selectedMode: "SELL_NFT" | "AUCTION_NFT" | null, auctionDuration?: number | null }
 ) {
     let attributes: Attribute[] | null;
 
@@ -104,6 +104,14 @@ export default function ReviewListingAccordion(
                             <p className="uppercase font-normal text-blue-600">Selling Price</p>
                             <p className="uppercase font-normal">{sellingPrice} SOL</p>
                         </div>
+                        {
+                            selectedMode === "AUCTION_NFT" ? (
+                                <div className="flex items-center justify-between">
+                                    <p className="uppercase font-normal text-blue-600">Auction Duration</p>
+                                    <p className="uppercase font-normal">{auctionDuration} hour</p>
+                                </div>
+                            ) : null
+                        }
                         <div className="flex items-center justify-between">
                             <p className="uppercase font-normal text-blue-600">Selling Option</p>
                             <p className="uppercase font-normal">{selectedMode}</p>

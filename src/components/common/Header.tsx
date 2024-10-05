@@ -14,7 +14,7 @@ export default function Header() {
                     src="/cdn/logo/favicon.webp"
                     className="w-6 h-6 sm:w-7 sm:h-7 lg:w-7 lg:h-7 object-cover"
                 />
-                <h1 className="text-lg sm:text-2xl lg:text-2xl text-blue-600 font-Andvari font-normal">ripin</h1>
+                <h1 className="text-lg sm:text-2xl lg:text-2xl text-blue-600 font-Andvari font-normal">DripIn</h1>
             </Link>
             <ConnectWallet />
             {/* <Link href="/create">

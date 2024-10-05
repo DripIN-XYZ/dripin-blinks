@@ -12,7 +12,7 @@ export default function Header() {
                     src="/cdn/logo/favicon.webp"
                     className="w-7 h-7 object-cover"
                 />
-                <h1 className="text-2xl text-blue-600 font-Andvari font-normal">ripin</h1>
+                <h1 className="text-2xl text-blue-600 font-Andvari font-normal">DripIn</h1>
             </Link>
             <div />
         </header>

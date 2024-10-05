@@ -6,6 +6,7 @@ import confetti from "canvas-confetti";
 import Header from "./_components/Header";
 import { useEffect, useState } from "react";
 import NFTList from "@/lib/tensor/NFT_List";
+import { Connection } from '@solana/web3.js';
 import { Input } from "@/components/ui/input";
 import ConnectWallet from "@/components/wallet";
 import { Button } from "@/components/ui/button";
@@ -16,12 +17,12 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import FlickeringGrid from "@/components/magicui/flickering-grid";
 import FormPagination from "@/components/createBlink/formPagination";
 import { NextImageCollection, NextImageNft } from "@/components/NextImage";
-import { Connection, Transaction, VersionedTransaction } from '@solana/web3.js';
 import ReviewListingAccordion from "@/components/createBlink/reviewListingAccordion";
 import searchAssets, { getSearchAssetsType, Collectible } from "@/lib/phantom/searchAssets";
 
 export default function CreateBlink() {
-    const { publicKey, signTransaction, signAllTransactions, disconnecting } = useWallet();
+    const wallet = useWallet();
+    const { publicKey, disconnecting } = useWallet();
 
     const [currentFormPage, setCurrentFormPage] = useState<number>(1);
     const formPage = Array.from({ length: 8 }, (_, i) => i + 1);
@@ -36,8 +37,14 @@ export default function CreateBlink() {
 
     const [selectedMode, setSelectedMode] = useState<"SELL_NFT" | "AUCTION_NFT" | null>(null);
     const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
+    const [auctionDuration, setAuctionDuration] = useState<number | null>(null);
 
     const [blinkLink, setBlinkLink] = useState<string | null>(null);
+
+    function hoursToMilliseconds(hours: number): number {
+        const millisecondsInAnHour = 60 * 60 * 1000; // 1 hour = 3,600,000 milliseconds
+        return hours * millisecondsInAnHour;
+    }
 
     const handleConfettiClick = () => {
         const duration = 5 * 1000;
@@ -70,53 +77,70 @@ export default function CreateBlink() {
 
     const handleTransectionClick = async () => {
         try {
-            const connection = new Connection(process.env.NEXT_PUBLIC_SHYFT_RPC_URL!, "confirmed");
-            const blockhash = await connection.getLatestBlockhash();
 
             if (!selectedNFTDetails) {
                 return;
             }
 
-            const listData = await NFTList({
-                mint: selectedNFTDetails.chainData.mint,
-                owner: selectedNFTDetails.owner,
-                price: selectedPrice! * (10 ** 9),
-                blockhash: blockhash.blockhash
-            });
+            if (selectedMode === "SELL_NFT") {
+                const signedTransaction = await NFTList(
+                    wallet,
+                    {
+                        mint: selectedNFTDetails.chainData.mint,
+                        owner: selectedNFTDetails.owner,
+                        price: selectedPrice! * (10 ** 9),
+                    });
 
-            if (!listData) {
-                return;
-            }
+                console.log("======== signedTransaction ========", signedTransaction);
 
-            console.log("======== ListData ========", listData);
+                const connection = new Connection(process.env.NEXT_PUBLIC_SHYFT_RPC_URL!, "confirmed");
+                const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+                console.log("======== signature ========", signature);
 
-            const txsToSign = (listData).txs.map((tx) =>
-                tx.txV0 ? VersionedTransaction.deserialize(tx.txV0.data) : Transaction.from(tx.tx.data)
-            );
-            console.log("======== txsToSign ========", txsToSign);
-
-            if (signAllTransactions) {
-                const signedTxs = await signAllTransactions(txsToSign as (Transaction | VersionedTransaction)[]);
-                for (const tx of signedTxs) {
-                    const sig = await connection.sendTransaction(tx as VersionedTransaction);
-                    await connection.confirmTransaction(sig, 'confirmed');
-
-                    console.log("======== signAllTransactions Signature ========", sig);
+                if (!signature) {
+                    throw new Error("Transaction failed");
                 }
-                setCurrentFormPage(currentFormPage + 1)
+
+                const url = new URL(window.location.href);
+                const baseUrl = url.origin;
+
+                setBlinkLink(`${baseUrl}/api/buyNFT/${selectedNFTDetails.chainData.mint}`);
+
+                setCurrentFormPage(currentFormPage + 1);
                 handleConfettiClick();
-            } else if (signTransaction) {
-                for (const tx of txsToSign) {
-                    const signedTx = await signTransaction(tx);
-                    const sig = await connection.sendTransaction(signedTx as VersionedTransaction);
-                    await connection.confirmTransaction(sig, 'confirmed');
-
-                    console.log("======== signTransaction Signature ========", sig);
+            } else if (selectedMode === "AUCTION_NFT") {
+                if (!auctionDuration) {
+                    return;
                 }
-                setCurrentFormPage(currentFormPage + 1)
+
+                const signedTransaction = await NFTList(
+                    wallet,
+                    {
+                        mint: selectedNFTDetails.chainData.mint,
+                        owner: selectedNFTDetails.owner,
+                        price: selectedPrice! * (10 ** 9),
+                        expireIn: hoursToMilliseconds(auctionDuration),
+                    });
+
+                console.log("======== signedTransaction ========", signedTransaction);
+
+                const connection = new Connection(process.env.NEXT_PUBLIC_SHYFT_RPC_URL!, "confirmed");
+                const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+                console.log("======== signature ========", signature);
+
+                if (!signature) {
+                    throw new Error("Transaction failed");
+                }
+
+                const url = new URL(window.location.href);
+                const baseUrl = url.origin;
+
+                setBlinkLink(`${baseUrl}/api/bidNFT/${selectedNFTDetails.chainData.mint}`);
+
+                setCurrentFormPage(currentFormPage + 1);
                 handleConfettiClick();
             } else {
-                console.error("No wallet adapter found");
+                console.error("Invalid Mode");
             }
         } catch (error) {
             console.error("An error occurred:", error);
@@ -311,25 +335,65 @@ export default function CreateBlink() {
                     <div className="h-full flex flex-col justify-center">
                         <h1 className="text-5xl font-bold">Set Price</h1>
                         <h2 className="pt-2 text-xl font-normal text-black">What&apos;s your asking price for this NFT?</h2>
-                        <form className="pt-5 flex gap-4 items-center">
-                            <Input
-                                required
-                                type="number"
-                                placeholder="Enter Amount"
-                                onChange={(e) => setSelectedPrice(e.target.valueAsNumber)}
-                                className="w-1/3 text-sm bg-transparent focus-visible:ring-blue-800 font-Andvari appearance-none"
-                            />
-                            <Button
-                                onClick={() => {
-                                    setCurrentFormPage(currentFormPage + 1);
-                                }}
-                                type="submit"
-                                variant="default"
-                                className="border-2 border-blue-600 bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm font-Andvari"
-                            >
-                                Confirm
-                            </Button>
-                        </form>
+                        {
+                            selectedMode === "SELL_NFT" ? (
+                                <form>
+                                    <div className="pt-5 flex gap-4">
+                                        <Input
+                                            required
+                                            type="number"
+                                            placeholder="Enter Amount"
+                                            onChange={(e) => setSelectedPrice(e.target.valueAsNumber)}
+                                            className="w-3/4 text-sm bg-transparent focus-visible:ring-blue-800 font-Andvari appearance-none"
+                                        />
+                                    </div>
+                                    <div className="pt-5 flex gap-4 items-center">
+                                        <Button
+                                            onClick={() => {
+                                                setCurrentFormPage(currentFormPage + 1);
+                                            }}
+                                            type="submit"
+                                            variant="default"
+                                            className="border-2 border-blue-600 bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm font-Andvari"
+                                        >
+                                            Confirm
+                                        </Button>
+                                    </div>
+                                </form>
+                            ) : selectedMode === "AUCTION_NFT" ? (
+                                <div>
+                                    <div className="pt-5 flex flex-col gap-4">
+                                        <Input
+                                            required
+                                            step="0.01"
+                                            type="number"
+                                            placeholder="Enter Amount In SOL"
+                                            onChange={(e) => setSelectedPrice(e.target.valueAsNumber)}
+                                            className="w-3/4 text-sm bg-transparent focus-visible:ring-blue-800 font-Andvari appearance-none"
+                                        />
+                                        <Input
+                                            required
+                                            type="number"
+                                            placeholder="Enter Duration in Hours"
+                                            onChange={(e) => setAuctionDuration(e.target.valueAsNumber)}
+                                            className="w-3/4 text-sm bg-transparent focus-visible:ring-blue-800 font-Andvari appearance-none"
+                                        />
+                                    </div>
+                                    <div className="pt-5 flex gap-4 items-center">
+                                        <Button
+                                            onClick={() => {
+                                                setCurrentFormPage(currentFormPage + 1);
+                                            }}
+                                            type="submit"
+                                            variant="default"
+                                            className="border-2 border-blue-600 bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm font-Andvari"
+                                        >
+                                            Confirm
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : null
+                        }
                     </div>
                 );
 
@@ -342,6 +406,7 @@ export default function CreateBlink() {
                             <ScrollArea className="pt-4 w-full h-[70vh] overflow-hidden">
                                 <ReviewListingAccordion
                                     selectedMode={selectedMode}
+                                    auctionDuration={auctionDuration}
                                     sellingPrice={selectedPrice}
                                     nftDetails={selectedNFTDetails}
                                 />
@@ -515,7 +580,7 @@ export default function CreateBlink() {
         tokens?.collectibles.forEach((nft) => {
             const collection = nft.collection.id;
             const isSpam: boolean = nft.collection.isSpam;
-            if (collection && !isSpam) {
+            if (collection) {
                 collectionMap.set(collection, nft);
             }
         });

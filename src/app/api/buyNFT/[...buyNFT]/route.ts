@@ -206,7 +206,6 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-    const url = new URL(request.url);
     const nftMintAddress = getListAddress(request.url);
 
     const body: ActionPostRequest = await request.json();
@@ -239,8 +238,10 @@ export async function POST(request: Request) {
             const encodedTx = data.txs[0].tx.data;
             const transactionBuffer = Buffer.from(encodedTx);
 
-            console.log("Buy NFT Tx: ", transactionBuffer);
             const transaction = Transaction.from(transactionBuffer);
+
+            console.log("Buy NFT Tx: ", transaction);
+
             return transaction;
         });
 

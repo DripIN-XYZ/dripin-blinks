@@ -1,10 +1,11 @@
 import axios, { AxiosResponse } from "axios";
+import { Connection, Transaction } from "@solana/web3.js";
+import { WalletContextState } from "@solana/wallet-adapter-react";
 
 interface NFTListType {
     mint: string;
     owner: string;
     price: number;
-    blockhash: string;
     makerBroker?: string;
     payer?: string;
     feePayer?: string;
@@ -33,28 +34,33 @@ export interface getNFTListType {
     totalCost: number | null;
 }
 
-export default async function NFTList({
-    mint,
-    owner,
-    price,
-    blockhash,
-    makerBroker,
-    payer,
-    feePayer,
-    rentPayer,
-    currency,
-    expireIn,
-    privateTaker,
-    delegateSigner,
-    compute,
-    priorityMicroLamports
-}: NFTListType) {
+export default async function NFTList(
+    wallet: WalletContextState,
+    {
+        mint,
+        owner,
+        price,
+        makerBroker,
+        payer,
+        feePayer,
+        rentPayer,
+        currency,
+        expireIn,
+        privateTaker,
+        delegateSigner,
+        compute,
+        priorityMicroLamports
+    }: NFTListType): Promise<Transaction> {
     const baseURL: string = "/api/tensor/list";
+
+    const connection = new Connection(process.env.NEXT_PUBLIC_SHYFT_RPC_URL!, "confirmed");
+    const blockhash = await connection.getLatestBlockhash();
+
     const params = new URLSearchParams({
         mint,
         owner,
         price: price.toString(),
-        blockhash,
+        blockhash: blockhash.blockhash,
         ...(makerBroker && { makerBroker }),
         ...(payer && { payer }),
         ...(feePayer && { feePayer }),
@@ -70,8 +76,20 @@ export default async function NFTList({
     try {
         const response: AxiosResponse<getNFTListType> = await axios.get(`${baseURL}?${params}`);
 
-        console.log("=================",response.data);
-        return response.data;
+        if (response.data.txs.length === 0) {
+            throw new Error("No transactions returned");
+        }
+
+        const transactionBuffer = Buffer.from(response.data.txs[0].tx.data);
+        const transaction = Transaction.from(transactionBuffer);
+
+        if (!wallet.signTransaction) {
+            throw new Error("Wallet does not support transaction signing");
+        }
+
+        const signedTransaction = await wallet.signTransaction(transaction);
+
+        return signedTransaction;
     } catch (error) {
         console.error(error);
         throw error;
