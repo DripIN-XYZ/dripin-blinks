@@ -5,23 +5,24 @@ import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
 import Header from "./_components/Header";
 import { useEffect, useState } from "react";
-import fetchTokens from "@/lib/searchAssets";
+import NFTList from "@/lib/tensor/NFT_List";
 import { Input } from "@/components/ui/input";
 import ConnectWallet from "@/components/wallet";
 import { Button } from "@/components/ui/button";
 import { NewTwitterIcon } from "hugeicons-react";
 import Wrapper from "@/components/common/Wrapper";
-import { useWallet } from "@solana/wallet-adapter-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Connection, Transaction } from '@solana/web3.js';
+import { useWallet } from "@solana/wallet-adapter-react";
 import FlickeringGrid from "@/components/magicui/flickering-grid";
 import FormPagination from "@/components/createBlink/formPagination";
 import { NextImageCollection, NextImageNft } from "@/components/NextImage";
+import { Connection, Transaction, VersionedTransaction } from '@solana/web3.js';
 import ReviewListingAccordion from "@/components/createBlink/reviewListingAccordion";
 import searchAssets, { getSearchAssetsType, Collectible } from "@/lib/phantom/searchAssets";
 
 export default function CreateBlink() {
-    const { publicKey, signTransaction, sendTransaction, connected, disconnecting } = useWallet();
+    const { publicKey, signTransaction, signAllTransactions, disconnecting } = useWallet();
+
     const [currentFormPage, setCurrentFormPage] = useState<number>(1);
     const formPage = Array.from({ length: 8 }, (_, i) => i + 1);
 
@@ -67,52 +68,59 @@ export default function CreateBlink() {
         }, 250);
     };
 
-    const executeTransaction = async ({ encTx }: { encTx: string }) => {
-        if (!connected) {
-            console.error('Wallet not connected or no transaction to execute');
-            return;
-        }
-
+    const handleTransectionClick = async () => {
         try {
-            const connection = new Connection('https://api.mainnet-beta.solana.com');
-            const encodedTransaction = encTx;
-            const transaction = Transaction.from(Buffer.from(encodedTransaction, 'base64'));
+            const connection = new Connection(process.env.NEXT_PUBLIC_SHYFT_RPC_URL!, "confirmed");
+            const blockhash = await connection.getLatestBlockhash();
 
-            transaction.feePayer = publicKey!;
-            if (signTransaction) {
-                const signedTransaction = await signTransaction(transaction);
-                const signature = await sendTransaction(signedTransaction, connection);
-                const confirmation = await connection.confirmTransaction(signature);
-                console.log('Transaction confirmed:', confirmation);
-            } else {
-                console.error('signTransaction is not defined');
+            if (!selectedNFTDetails) {
                 return;
             }
-        } catch (error) {
-            console.error('Error executing transaction:', error);
-        }
-    };
 
-    const handleTransectionClick = () => {
-        // encTxListNFT({
-        //     nft_address: selectedNFTDetails?.id as string,
-        //     price: selectedPrice as number,
-        //     seller_wallet: publicKey?.toString() as string
-        // }).then((data) => {
-        //     console.log("DATA", data);
-        //     if (data) {
-        //         const encTx = data.result.encoded_transaction;
-        //         executeTransaction({ encTx });
-        setCurrentFormPage(currentFormPage + 1);
-        // setBlinkLink(`${window.location.origin}/api/buyNFT/${data.result.list_state}`);
-        handleConfettiClick();
-        //     }
-        //     else {
-        //         console.error("Error in transaction");
-        //     }
-        // }).catch(
-        //     console.error
-        // );
+            const listData = await NFTList({
+                mint: selectedNFTDetails.chainData.mint,
+                owner: selectedNFTDetails.owner,
+                price: selectedPrice! * (10 ** 9),
+                blockhash: blockhash.blockhash
+            });
+
+            if (!listData) {
+                return;
+            }
+
+            console.log("======== ListData ========", listData);
+
+            const txsToSign = (listData).txs.map((tx) =>
+                tx.txV0 ? VersionedTransaction.deserialize(tx.txV0.data) : Transaction.from(tx.tx.data)
+            );
+            console.log("======== txsToSign ========", txsToSign);
+
+            if (signAllTransactions) {
+                const signedTxs = await signAllTransactions(txsToSign as (Transaction | VersionedTransaction)[]);
+                for (const tx of signedTxs) {
+                    const sig = await connection.sendTransaction(tx as VersionedTransaction);
+                    await connection.confirmTransaction(sig, 'confirmed');
+
+                    console.log("======== signAllTransactions Signature ========", sig);
+                }
+                setCurrentFormPage(currentFormPage + 1)
+                handleConfettiClick();
+            } else if (signTransaction) {
+                for (const tx of txsToSign) {
+                    const signedTx = await signTransaction(tx);
+                    const sig = await connection.sendTransaction(signedTx as VersionedTransaction);
+                    await connection.confirmTransaction(sig, 'confirmed');
+
+                    console.log("======== signTransaction Signature ========", sig);
+                }
+                setCurrentFormPage(currentFormPage + 1)
+                handleConfettiClick();
+            } else {
+                console.error("No wallet adapter found");
+            }
+        } catch (error) {
+            console.error("An error occurred:", error);
+        }
     };
 
     const renderFormSection = (currentFormPage: number) => {

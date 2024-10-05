@@ -14,13 +14,19 @@ interface EditBidType {
 
 export interface getEditBidType {
     txs: Array<{
-        tx: string | null;
-        txV0: string;
+        tx: {
+            type: string;
+            data: Uint8Array;
+        };
+        txV0: {
+            type: string;
+            data: Uint8Array;
+        };
         lastValidBlockHeight: number | null;
         metadata: object | null;
     }>;
     bidState: string | null;
-};
+}
 
 export default async function EditBid({
     bidStateAddress,
@@ -33,20 +39,24 @@ export default async function EditBid({
     compute,
     priorityMicroLamports
 }: EditBidType) {
-    const baseURL: string = "https://api.mainnet.tensordev.io/api/v1/tx/edit_bid";
-    const options = {
-        method: "GET",
-        url: `${baseURL}?bidStateAddress=${bidStateAddress}&blockhash=${blockhash}&price=${price}&quantity=${quantity}&expireIn=${expireIn}&privateTaker=${privateTaker}&useSharedEscrow=${useSharedEscrow}&compute=${compute}&priorityMicroLamports=${priorityMicroLamports}`,
-        headers: {
-            accept: "application/json",
-            "x-tensor-api-key": process.env.NEXT_PUBLIC_TENSOR_API_KEY
-        }
-    };
+    const baseURL: string = "/api/tensor/edit_bid";
+    const params = new URLSearchParams({
+        bidStateAddress,
+        blockhash,
+        ...(price !== undefined && { price: price.toString() }),
+        ...(quantity !== undefined && { quantity: quantity.toString() }),
+        ...(expireIn !== undefined && { expireIn: expireIn.toString() }),
+        ...(privateTaker && { privateTaker }),
+        ...(useSharedEscrow !== undefined && { useSharedEscrow: useSharedEscrow.toString() }),
+        ...(compute && { compute: compute.toString() }),
+        ...(priorityMicroLamports && { priorityMicroLamports: priorityMicroLamports.toString() })
+    });
 
     try {
-        const response: AxiosResponse<getEditBidType> = await axios.request(options);
+        const response: AxiosResponse<getEditBidType> = await axios.get(`${baseURL}?${params}`);
         return response.data;
     } catch (error) {
         console.error(error);
+        throw error;
     }
 }

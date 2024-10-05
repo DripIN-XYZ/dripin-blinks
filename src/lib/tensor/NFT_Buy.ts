@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from "axios";
+import { promises } from "dns";
 
 interface NFTBuyType {
     buyer: string;
@@ -17,13 +18,20 @@ interface NFTBuyType {
 }
 
 export interface getNFTBuyType {
-    txs: Array<{
-        tx: string | null;
-        txV0: string;
-        lastValidBlockHeight: number | null;
-        metadata: object | null;
-    }>;
-    totalCost: number | null;
+    txs: [
+        {
+            tx: {
+                type: string;
+                data: Uint8Array;
+            };
+            txV0: {
+                type: string;
+                data: Uint8Array;
+            };
+            lastValidBlockHeight: number | null;
+            metadata: object | null;
+        }
+    ];
 }
 
 export default async function NFTBuy({
@@ -40,21 +48,29 @@ export default async function NFTBuy({
     takerBroker,
     compute,
     priorityMicroLamports
-}: NFTBuyType) {
-    const baseURL: string = "https://api.mainnet.tensordev.io/api/v1/tx/buy";
-    const options = {
-        method: "GET",
-        url: `${baseURL}?buyer=${buyer}&mint=${mint}&owner=${owner}&maxPrice=${maxPrice}&blockhash=${blockhash}&includeTotalCost=${includeTotalCost}&payer=${payer}&feePayer=${feePayer}&optionalRoyaltyPct=${optionalRoyaltyPct}&currency=${currency}&takerBroker=${takerBroker}&compute=${compute}&priorityMicroLamports=${priorityMicroLamports}`,
-        headers: {
-            accept: "application/json",
-            "x-tensor-api-key": process.env.NEXT_PUBLIC_TENSOR_API_KEY
-        }
-    };
+}: NFTBuyType): Promise<getNFTBuyType> {
+    const baseURL: string = "/api/tensor/buy";
+    const params = new URLSearchParams({
+        buyer,
+        mint,
+        owner,
+        maxPrice: maxPrice.toString(),
+        blockhash,
+        ...(includeTotalCost !== undefined && { includeTotalCost: includeTotalCost.toString() }),
+        ...(payer && { payer }),
+        ...(feePayer && { feePayer }),
+        ...(optionalRoyaltyPct !== undefined && { optionalRoyaltyPct: optionalRoyaltyPct.toString() }),
+        ...(currency && { currency }),
+        ...(takerBroker && { takerBroker }),
+        ...(compute && { compute: compute.toString() }),
+        ...(priorityMicroLamports && { priorityMicroLamports: priorityMicroLamports.toString() })
+    });
 
     try {
-        const response: AxiosResponse<getNFTBuyType> = await axios.request(options);
+        const response = await axios.get(`${baseURL}?${params}`);
         return response.data;
     } catch (error) {
         console.error(error);
+        throw error;
     }
 }

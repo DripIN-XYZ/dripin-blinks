@@ -19,8 +19,14 @@ interface Option1 {
 
 interface BidState {
     txs: Array<{
-        tx: string | null;
-        txV0: string;
+        tx: {
+            type: string;
+            data: Uint8Array;
+        };
+        txV0: {
+            type: string;
+            data: Uint8Array;
+        };
         lastValidBlockHeight: number | null;
         metadata: object | null;
     }>;
@@ -41,20 +47,25 @@ export default async function PlaceNFTBid({
     compute,
     priorityMicroLamports
 }: PlaceNFTBidType) {
-    const baseURL: string = "https://api.mainnet.tensordev.io/api/v1/tx/bid";
-    const options = {
-        method: "GET",
-        url: `${baseURL}?owner=${owner}&price=${price}&mint=${mint}&blockhash=${blockhash}&makerBroker=${makerBroker}&useSharedEscrow=${useSharedEscrow}&rentPayer=${rentPayer}&expireIn=${expireIn}&compute=${compute}&priorityMicroLamports=${priorityMicroLamports}`,
-        headers: {
-            accept: "application/json",
-            "x-tensor-api-key": process.env.NEXT_PUBLIC_TENSOR_API_KEY
-        }
-    };
+    const baseURL: string = "/api/tensor/bid";
+    const params = new URLSearchParams({
+        owner,
+        price: price.toString(),
+        mint,
+        blockhash,
+        ...(makerBroker && { makerBroker }),
+        ...(useSharedEscrow !== undefined && { useSharedEscrow: useSharedEscrow.toString() }),
+        ...(rentPayer && { rentPayer }),
+        ...(expireIn && { expireIn: expireIn.toString() }),
+        ...(compute && { compute: compute.toString() }),
+        ...(priorityMicroLamports && { priorityMicroLamports: priorityMicroLamports.toString() })
+    });
 
     try {
-        const response: AxiosResponse<getPlaceNFTBidType> = await axios.request(options);
+        const response: AxiosResponse<getPlaceNFTBidType> = await axios.get(`${baseURL}?${params}`);
         return response.data;
     } catch (error) {
         console.error(error);
+        throw error;
     }
 }

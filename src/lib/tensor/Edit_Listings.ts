@@ -13,8 +13,14 @@ interface EditListingsType {
 
 export interface getEditListingsType {
     txs: Array<{
-        tx: string | null;
-        txV0: string;
+        tx: {
+            type: string;
+            data: Uint8Array;
+        };
+        txV0: {
+            type: string;
+            data: Uint8Array;
+        };
         lastValidBlockHeight: number | null;
         metadata: object | null;
     }>;
@@ -31,20 +37,23 @@ export default async function EditListings({
     compute,
     priorityMicroLamports
 }: EditListingsType) {
-    const baseURL: string = "https://api.mainnet.tensordev.io/api/v1/tx/edit";
-    const options = {
-        method: "GET",
-        url: `${baseURL}?mint=${mint}&owner=${owner}&price=${price}&blockhash=${blockhash}&expireIn=${expireIn}&feePayer=${feePayer}&compute=${compute}&priorityMicroLamports=${priorityMicroLamports}`,
-        headers: {
-            accept: "application/json",
-            "x-tensor-api-key": process.env.NEXT_PUBLIC_TENSOR_API_KEY
-        }
-    };
+    const baseURL: string = "/api/tensor/edit";
+    const params = new URLSearchParams({
+        mint,
+        owner,
+        price: price.toString(),
+        blockhash,
+        ...(expireIn !== undefined && { expireIn: expireIn.toString() }),
+        ...(feePayer && { feePayer }),
+        ...(compute && { compute: compute.toString() }),
+        ...(priorityMicroLamports && { priorityMicroLamports: priorityMicroLamports.toString() })
+    });
 
     try {
-        const response: AxiosResponse<getEditListingsType> = await axios.request(options);
+        const response: AxiosResponse<getEditListingsType> = await axios.get(`${baseURL}?${params}`);
         return response.data;
     } catch (error) {
         console.error(error);
+        throw error;
     }
 }

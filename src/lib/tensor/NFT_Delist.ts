@@ -11,8 +11,14 @@ interface NFTDelistType {
 
 export interface getNFTDelistType {
     txs: Array<{
-        tx: string | null;
-        txV0: string;
+        tx: {
+            type: string;
+            data: Uint8Array;
+        };
+        txV0: {
+            type: string;
+            data: Uint8Array;
+        };
         lastValidBlockHeight: number | null;
         metadata: object | null;
     }>;
@@ -27,20 +33,21 @@ export default async function NFTDelist({
     compute,
     priorityMicroLamports
 }: NFTDelistType) {
-    const baseURL: string = "https://api.mainnet.tensordev.io/api/v1/tx/delist";
-    const options = {
-        method: "GET",
-        url: `${baseURL}?mint=${mint}&owner=${owner}&blockhash=${blockhash}&feePayer=${feePayer}&compute=${compute}&priorityMicroLamports=${priorityMicroLamports}`,
-        headers: {
-            accept: "application/json",
-            "x-tensor-api-key": process.env.NEXT_PUBLIC_TENSOR_API_KEY
-        }
-    };
+    const baseURL: string = "/api/tensor/delist";
+    const params = new URLSearchParams({
+        mint,
+        owner,
+        blockhash,
+        ...(feePayer && { feePayer }),
+        ...(compute && { compute: compute.toString() }),
+        ...(priorityMicroLamports && { priorityMicroLamports: priorityMicroLamports.toString() })
+    });
 
     try {
-        const response: AxiosResponse<getNFTDelistType> = await axios.request(options);
+        const response: AxiosResponse<getNFTDelistType> = await axios.get(`${baseURL}?${params}`);
         return response.data;
     } catch (error) {
         console.error(error);
+        throw error;
     }
 }

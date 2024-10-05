@@ -20,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn(inter.className, "bg-[#FAFAFA] select-none")}>
+      <body className={cn(inter.className, "bg-[#FAFAFA]")}>
         <NextTopLoader color="#0057FF" showSpinner={false} />
         {children}
         <Toaster />

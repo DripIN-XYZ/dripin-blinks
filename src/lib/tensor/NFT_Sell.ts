@@ -18,8 +18,14 @@ interface NFTSellType {
 
 export interface getNFTSellType {
     txs: Array<{
-        tx: string | null;
-        txV0: string;
+        tx: {
+            type: string;
+            data: Uint8Array;
+        };
+        txV0: {
+            type: string;
+            data: Uint8Array;
+        };
         lastValidBlockHeight: number | null;
         metadata: object | null;
     }>;
@@ -41,20 +47,28 @@ export default async function NFTSell({
     compute,
     priorityMicroLamports
 }: NFTSellType) {
-    const baseURL: string = "https://api.mainnet.tensordev.io/api/v1/tx/sell";
-    const options = {
-        method: "GET",
-        url: `${baseURL}?seller=${seller}&mint=${mint}&bidAddress=${bidAddress}&minPrice=${minPrice}&blockhash=${blockhash}&takerBroker=${takerBroker}&feePayer=${feePayer}&optionalRoyaltyPct=${optionalRoyaltyPct}&currency=${currency}&delegateSigner=${delegateSigner}&includeProof=${includeProof}&compute=${compute}&priorityMicroLamports=${priorityMicroLamports}`,
-        headers: {
-            accept: "application/json",
-            "x-tensor-api-key": process.env.NEXT_PUBLIC_TENSOR_API_KEY
-        }
-    };
+    const baseURL: string = "/api/tensor/sell";
+    const params = new URLSearchParams({
+        seller,
+        mint,
+        bidAddress,
+        minPrice: minPrice.toString(),
+        blockhash,
+        ...(takerBroker && { takerBroker }),
+        ...(feePayer && { feePayer }),
+        ...(optionalRoyaltyPct !== undefined && { optionalRoyaltyPct: optionalRoyaltyPct.toString() }),
+        ...(currency && { currency }),
+        ...(delegateSigner !== undefined && { delegateSigner: delegateSigner.toString() }),
+        ...(includeProof !== undefined && { includeProof: includeProof.toString() }),
+        ...(compute && { compute: compute.toString() }),
+        ...(priorityMicroLamports && { priorityMicroLamports: priorityMicroLamports.toString() })
+    });
 
     try {
-        const response: AxiosResponse<getNFTSellType> = await axios.request(options);
+        const response: AxiosResponse<getNFTSellType> = await axios.get(`${baseURL}?${params}`);
         return response.data;
     } catch (error) {
         console.error(error);
+        throw error;
     }
 }

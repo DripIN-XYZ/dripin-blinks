@@ -19,8 +19,14 @@ interface NFTListType {
 
 export interface getNFTListType {
     txs: Array<{
-        tx: string | null;
-        txV0: string;
+        tx: {
+            type: string;
+            data: Uint8Array;
+        };
+        txV0: {
+            type: string;
+            data: Uint8Array;
+        };
         lastValidBlockHeight: number | null;
         metadata: object | null;
     }>;
@@ -43,20 +49,31 @@ export default async function NFTList({
     compute,
     priorityMicroLamports
 }: NFTListType) {
-    const baseURL: string = "https://api.mainnet.tensordev.io/api/v1/tx/list";
-    const options = {
-        method: "GET",
-        url: `${baseURL}?mint=${mint}&owner=${owner}&price=${price}&blockhash=${blockhash}&makerBroker=${makerBroker}&payer=${payer}&feePayer=${feePayer}&rentPayer=${rentPayer}&currency=${currency}&expireIn=${expireIn}&privateTaker=${privateTaker}&delegateSigner=${delegateSigner}&compute=${compute}&priorityMicroLamports=${priorityMicroLamports}`,
-        headers: {
-            accept: "application/json",
-            "x-tensor-api-key": process.env.NEXT_PUBLIC_TENSOR_API_KEY
-        }
-    };
+    const baseURL: string = "/api/tensor/list";
+    const params = new URLSearchParams({
+        mint,
+        owner,
+        price: price.toString(),
+        blockhash,
+        ...(makerBroker && { makerBroker }),
+        ...(payer && { payer }),
+        ...(feePayer && { feePayer }),
+        ...(rentPayer && { rentPayer }),
+        ...(currency && { currency }),
+        ...(expireIn && { expireIn: expireIn.toString() }),
+        ...(privateTaker && { privateTaker }),
+        ...(delegateSigner !== undefined && { delegateSigner: delegateSigner.toString() }),
+        ...(compute && { compute: compute.toString() }),
+        ...(priorityMicroLamports && { priorityMicroLamports: priorityMicroLamports.toString() })
+    });
 
     try {
-        const response: AxiosResponse<getNFTListType> = await axios.request(options);
+        const response: AxiosResponse<getNFTListType> = await axios.get(`${baseURL}?${params}`);
+
+        console.log("=================",response.data);
         return response.data;
     } catch (error) {
         console.error(error);
+        throw error;
     }
 }
