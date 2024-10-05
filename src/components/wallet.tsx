@@ -10,6 +10,13 @@ import { processWalletSignin } from "@/lib/supabase/walletSign";
 import { useWallet } from "@solana/wallet-adapter-react";
 import type { StandardWalletAdapter } from "@solana/wallet-adapter-base";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface WalletSignInState {
     walletSignIn: boolean;
@@ -26,17 +33,15 @@ interface selectedWalletTypes {
 }
 
 export default function ConnectWallet() {
-    const { walletSignIn, setwalletSignIn } = useWalletSignInState();
     const [open, setOpen] = useState(false);
+    const [openSignIn, setOpenSignIn] = useState(true);
+    const { walletSignIn, setwalletSignIn } = useWalletSignInState();
     const [selectedWalletOpen, setSelectedWalletOpen] = useState(false);
     const [selectedWallet, setSelectedWallet] = useState<selectedWalletTypes | undefined>();
-    const { select, wallets, publicKey, disconnect, connecting, signIn, signMessage } = useWallet();
+    const { select, wallets, publicKey, disconnect, connected, connecting, disconnecting, signMessage } = useWallet();
 
-    async function signAndSend() {
-        if (!publicKey) {
-            return;
-        }
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    async function signAndSend(walllet_address: string): Promise<void> {
         const signInMessage = `
 Welcome to DripIn
 
@@ -45,12 +50,8 @@ The genesis for simplifying NFT trading
 By signing this message you agree to the
 teams and conditions
 
-Date: 
-${new Date().toISOString()}
-
 publicKey: 
-${publicKey?.toBase58()}
-`;
+${walllet_address}`;
 
         const message = new TextEncoder().encode(signInMessage);
         try {
@@ -58,26 +59,43 @@ ${publicKey?.toBase58()}
             console.log(signature, publicKey);
             if (!signature) {
                 setwalletSignIn(false);
+                setOpenSignIn(true);
                 disconnect();
                 return;
             } else {
-                const signIn = await processWalletSignin(publicKey.toString(), "create_or_update");
+                const signIn = await processWalletSignin(walllet_address, "create_or_update");
                 setwalletSignIn(true);
+                setOpenSignIn(false);
                 console.log(signIn);
+                await new Promise((resolve) => setTimeout(resolve, 1000));
             }
         } catch (error) {
             setwalletSignIn(false);
+            setOpenSignIn(true);
             disconnect();
             console.error(error);
         }
     }
 
     useEffect(() => {
-        if (!walletSignIn) {
-            signAndSend();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [publicKey])
+        const handleSignAndSend = async () => {
+            if (!publicKey) {
+                return;
+            }
+            if (walletSignIn) {
+                setOpenSignIn(false);
+                return;
+            }
+            if (disconnecting) {
+                return;
+            }
+            if (!walletSignIn) {
+                await signAndSend(publicKey.toBase58());
+            }
+        };
+
+        handleSignAndSend();
+    }, [publicKey, disconnecting, signAndSend, walletSignIn]);
 
     return (
         <>
@@ -152,6 +170,7 @@ ${publicKey?.toBase58()}
                                         <Button
                                             onClick={() => {
                                                 setwalletSignIn(false);
+                                                setOpenSignIn(true);
                                                 disconnect();
                                             }}
                                             className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-base font-Andvari"
@@ -166,7 +185,7 @@ ${publicKey?.toBase58()}
                 </DialogContent>
             </Dialog >
             {connecting ? (
-                <Dialog
+                <AlertDialog
                     open={selectedWalletOpen}
                     onOpenChange={
                         (isSelectedWalletOpen) => {
@@ -174,14 +193,14 @@ ${publicKey?.toBase58()}
                         }
                     }
                 >
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle className="flex items-center gap-4 font-Andvari">
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle className="flex items-center gap-4 font-Andvari">
                                 <Loading03Icon className="w-8 h-8 animate-spin" />
                                 Connecting {selectedWallet?.adapter.name}
-                            </DialogTitle>
-                            <DialogDescription></DialogDescription>
-                        </DialogHeader>
+                            </AlertDialogTitle>
+                            <AlertDialogDescription></AlertDialogDescription>
+                        </AlertDialogHeader>
                         <div className="flex flex-col gap-4 w-full items-center justify-center">
                             <Image
                                 src={selectedWallet?.adapter.icon || ""}
@@ -191,8 +210,38 @@ ${publicKey?.toBase58()}
                                 className="w-24 h-w-24"
                             />
                         </div>
-                    </DialogContent>
-                </Dialog>
+                    </AlertDialogContent>
+                </AlertDialog>
+            ) : !walletSignIn && connected ? (
+                <AlertDialog
+                    open={openSignIn}
+                    onOpenChange={
+                        (isopenSignIn) => {
+                            setOpenSignIn(isopenSignIn);
+                        }
+                    }
+                >
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle className="flex items-center gap-4 font-Andvari">
+                                <Loading03Icon className="w-8 h-8 animate-spin" />
+                                Sign In with {selectedWallet?.adapter.name}
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                                sign in to {publicKey?.toBase58().slice(0, 4) + ".." + publicKey?.toBase58().slice(-4)}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <div className="flex flex-col gap-4 w-full items-center justify-center">
+                            <Image
+                                src={selectedWallet?.adapter.icon || ""}
+                                alt={selectedWallet?.adapter.name || ""}
+                                width={256}
+                                height={256}
+                                className="w-24 h-w-24"
+                            />
+                        </div>
+                    </AlertDialogContent>
+                </AlertDialog>
             ) : null}
         </>
     );

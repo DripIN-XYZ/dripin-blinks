@@ -1,9 +1,10 @@
 "use client";
 
+import React from "react";
 import { useState } from "react";
-import { getTokenType, Attribute, Creator } from "@/lib/MagicEden/getTokens";
+import { Collectible, Attribute } from "@/lib/phantom/searchAssets";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Copy01Icon, CheckmarkSquare03Icon, ProfileIcon, UserMultipleIcon, Ticket02Icon, Tag01Icon } from "hugeicons-react";
+import { Copy01Icon, CheckmarkSquare03Icon, ProfileIcon, UserMultipleIcon, Tag01Icon, CoinsDollarIcon } from "hugeicons-react";
 
 const CopyButtonColumn = (
     { row1, row2, flip }: { row1: JSX.Element, row2: string, flip: boolean }
@@ -73,15 +74,9 @@ const AttributeColumn = (
 }
 
 export default function ReviewListingAccordion(
-    { nftDetails, sellingPrice, selectedMode }: { nftDetails: getTokenType, sellingPrice: number, selectedMode: string }
+    { nftDetails, sellingPrice, selectedMode, auctionDuration }: { nftDetails: Collectible, sellingPrice: number, selectedMode: "SELL_NFT" | "AUCTION_NFT" | null, auctionDuration?: number | null }
 ) {
-    let creators: Creator[] | undefined, attributes: Attribute[] | null;
-
-    if (nftDetails.properties?.creators === undefined) {
-        creators = undefined;
-    } else {
-        creators = nftDetails.properties?.creators;
-    }
+    let attributes: Attribute[] | null;
 
     if (nftDetails.attributes === null) {
         attributes = null
@@ -94,14 +89,14 @@ export default function ReviewListingAccordion(
             <Accordion
                 type="multiple"
                 defaultValue={
-                    ["details", "tokenCreators", "attributes"]
+                    ["details", "tokenDetails", "attributes"]
                 }
             >
                 <AccordionItem value="details">
                     <AccordionTrigger>
                         <div className="flex gap-2 items-center">
                             <ProfileIcon className="w-5 h-5" />
-                            Details
+                            NFT Details
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="flex flex-col w-full gap-1">
@@ -109,6 +104,14 @@ export default function ReviewListingAccordion(
                             <p className="uppercase font-normal text-blue-600">Selling Price</p>
                             <p className="uppercase font-normal">{sellingPrice} SOL</p>
                         </div>
+                        {
+                            selectedMode === "AUCTION_NFT" ? (
+                                <div className="flex items-center justify-between">
+                                    <p className="uppercase font-normal text-blue-600">Auction Duration</p>
+                                    <p className="uppercase font-normal">{auctionDuration} hour</p>
+                                </div>
+                            ) : null
+                        }
                         <div className="flex items-center justify-between">
                             <p className="uppercase font-normal text-blue-600">Selling Option</p>
                             <p className="uppercase font-normal">{selectedMode}</p>
@@ -121,36 +124,50 @@ export default function ReviewListingAccordion(
                         <CopyButtonColumn
                             flip={true}
                             row1={<p className="uppercase font-normal text-blue-600">mint address</p>}
-                            row2={nftDetails.mintAddress}
+                            row2={nftDetails.chainData.mint}
                         />
+                        {
+                            nftDetails.collection.isValidCollectionId ? (
+                                <div className="flex flex-col w-full gap-y-1">
+                                    <CopyButtonColumn
+                                        flip={true}
+                                        row1={<p className="uppercase font-normal text-blue-600">collection address</p>}
+                                        row2={nftDetails.collection.id}
+                                    />
+                                </div>
+                            ) : null
+                        }
                     </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="tokenCreators">
+                <AccordionItem value="tokenDetails">
                     <AccordionTrigger>
                         <div className="flex gap-2 items-center">
-                            <UserMultipleIcon className="w-5 h-5" />
-                            Token Creator
+                            <CoinsDollarIcon className="w-5 h-5" />
+                            Token Details
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="flex flex-col w-full gap-1">
-                        {
-                            creators && creators.length > 0 ? creators.map((creator, index) => {
-                                return (
-                                    <CopyButtonColumn
-                                        flip={false}
-                                        key={index}
-                                        row1={
-                                            <div className="flex gap-2 items-center text-blue-600">
-                                                <Ticket02Icon className="w-5 h-5" />
-                                                {`${creator.share}% Fees`}
-                                            </div>
-                                        }
-                                        row2={creator.address}
-                                    />
-                                )
-                            }) : ("No Creators Found")
-                        }
+                        <CopyButtonColumn
+                            flip={true}
+                            row1={<p className="uppercase font-normal text-blue-600">Token Standard</p>}
+                            row2={nftDetails.chainData.standard}
+                        />
+                        <CopyButtonColumn
+                            flip={true}
+                            row1={<p className="uppercase font-normal text-blue-600">Unique Holders</p>}
+                            row2={`${nftDetails.collection.ownerCount}`}
+                        />
+                        <CopyButtonColumn
+                            flip={true}
+                            row1={<p className="uppercase font-normal text-blue-600">Total Count</p>}
+                            row2={`${nftDetails.collection.totalCount}`}
+                        />
+                        <CopyButtonColumn
+                            flip={true}
+                            row1={<p className="uppercase font-normal text-blue-600">floor price</p>}
+                            row2={`${(nftDetails.collection.floorPrice?.price! / Math.pow(10, nftDetails.collection.floorPrice?.token.decimals!))} ${nftDetails.collection.floorPrice?.token.symbol}`}
+                        />
                     </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="attributes">
