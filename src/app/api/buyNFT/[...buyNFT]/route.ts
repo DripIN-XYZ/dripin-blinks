@@ -188,7 +188,8 @@ export async function GET(request: Request) {
                 icon: `https://image.dripin.xyz/api/resize?url=${nftData.imageUri}&width=1080&height=1080`,
                 title: `${nftData.name}`,
                 description: `${nftData.compressed ? "Compressed" : "Standard"} - ${nftData.tokenStandard}`,
-                label: `NFT not for sale`,
+                label: `NFT not listed`,
+                disabled: true,
             };
             return Response.json(payload, {
                 headers: ACTIONS_CORS_HEADERS,
