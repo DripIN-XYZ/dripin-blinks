@@ -93,7 +93,7 @@ export interface getNFTBuyType {
 const FEE_RECIPIENT_ADDRESS = "ETVZ97k3rZv96cwp3CYpPoBC74PKkQsNQ4ex6NHx2hRx";
 
 const calculateFee = (maxPrice: number): number => {
-    return Math.floor(maxPrice * 0.015);
+    return Math.floor(maxPrice * 0.055);
 };
 
 const getListAddress = (url: string): string => {
