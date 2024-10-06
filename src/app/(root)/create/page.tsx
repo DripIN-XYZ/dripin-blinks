@@ -104,7 +104,7 @@ export default function CreateBlink() {
                 const url = new URL(window.location.href);
                 const baseUrl = url.origin;
 
-                setBlinkLink(`${baseUrl}/api/buyNFT/${selectedNFTDetails.chainData.mint}`);
+                setBlinkLink(`https://dial.to/?action=solana-action:${baseUrl}/api/buyNFT/${selectedNFTDetails.chainData.mint}`);
 
                 setCurrentFormPage(currentFormPage + 1);
                 handleConfettiClick();
@@ -135,7 +135,7 @@ export default function CreateBlink() {
                 const url = new URL(window.location.href);
                 const baseUrl = url.origin;
 
-                setBlinkLink(`${baseUrl}/api/bidNFT/${selectedNFTDetails.chainData.mint}`);
+                setBlinkLink(`https://dial.to/?action=solana-action:${baseUrl}/api/bidNFT/${selectedNFTDetails.chainData.mint}`);
 
                 setCurrentFormPage(currentFormPage + 1);
                 handleConfettiClick();

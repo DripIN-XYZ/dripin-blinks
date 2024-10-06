@@ -7,7 +7,7 @@ import {
 } from "@solana/actions";
 
 import axios from "axios";
-import { Connection, LAMPORTS_PER_SOL, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, Transaction, PublicKey, SystemProgram } from "@solana/web3.js";
 
 export interface getNFTInfoType {
     onchainId: string;
@@ -90,6 +90,11 @@ export interface getNFTBuyType {
     >;
 }
 
+const FEE_RECIPIENT_ADDRESS = "ETVZ97k3rZv96cwp3CYpPoBC74PKkQsNQ4ex6NHx2hRx";
+
+const calculateFee = (maxPrice: number): number => {
+    return Math.floor(maxPrice * 0.055);
+};
 
 const getListAddress = (url: string): string => {
     const listAddress = url.split("/").pop();
@@ -132,7 +137,6 @@ async function fetchBuyNFTencTx({
 
     try {
         const URL = `https://api.mainnet.tensordev.io/api/v1/tx/buy?${params}`
-        console.log("++++++++ Buy NFT URL: ++++++++", URL);
 
         const response = await axios.get(URL, {
             headers: {
@@ -141,7 +145,6 @@ async function fetchBuyNFTencTx({
             },
         });
 
-        console.log("++++++++ Buy NFT Data: ++++++++", response.data);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -239,6 +242,8 @@ export async function POST(request: Request) {
 
     console.log("Buy NFT Data: ", buyerAddress, nftMintAddress, nftData.owner, parseInt(nftData.listing.price), blockhash.blockhash);
 
+    const fee = calculateFee(parseInt(nftData.listing.price));
+
     try {
         const encTx = await fetchBuyNFTencTx({
             buyer: buyerAddress,
@@ -249,12 +254,19 @@ export async function POST(request: Request) {
         }).then(async (data) => {
             console.log("Buy NFT Data: ", data);
 
+
             const encodedTx = data.txs[0].tx.data;
             const transactionBuffer = Buffer.from(encodedTx);
 
             const transaction = Transaction.from(transactionBuffer);
 
-            console.log("Buy NFT Tx: ", transaction);
+            transaction.add(
+                SystemProgram.transfer({
+                    fromPubkey: new PublicKey(buyerAddress),
+                    toPubkey: new PublicKey(FEE_RECIPIENT_ADDRESS),
+                    lamports: fee
+                })
+            );
 
             return transaction;
         });
