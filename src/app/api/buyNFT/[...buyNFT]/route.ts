@@ -90,7 +90,7 @@ export interface getNFTBuyType {
     >;
 }
 
-const FEE_RECIPIENT_ADDRESS = "ETVZ97k3rZv96cwp3CYpPoBC74PKkQsNQ4ex6NHx2hRx";
+const FEE_RECIPIENT_ADDRESS = process.env.NEXT_PUBLIC_DRIPIN_WALLET_KEY || "ETVZ97k3rZv96cwp3CYpPoBC74PKkQsNQ4ex6NHx2hRx";
 
 const calculateFee = (maxPrice: number): number => {
     return Math.floor(maxPrice * 0.055);
