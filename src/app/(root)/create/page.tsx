@@ -613,6 +613,31 @@ export default function CreateBlink() {
                         <FormPagination
                             currentFormPage={currentFormPage}
                             totalFormPage={formPage.length}
+                            nextButtonDisabled={() => {
+                                switch (currentFormPage) {
+                                    case 1:
+                                        return publicKey === null;
+                                    case 2:
+                                        return selectedCollectionAddress === "";
+                                    case 3:
+                                        return selectedNFTDetails === null;
+                                    case 4:
+                                        return selectedMode === null;
+                                    case 5:
+                                        return selectedPrice === null;
+                                    case 6:
+                                        return selectedNFTDetails === null || selectedPrice === null || selectedMode === null;
+                                    case 7:
+                                        return false;
+                                    case 8:
+                                        return false;
+                                    default:
+                                        return true;
+                                }
+                            }}
+                            backButtonDisabled={() => {
+                                return currentFormPage === 1;
+                            }}
                             nextButtonOnClick={() => setCurrentFormPage(currentFormPage + 1)}
                             backButtonOnClick={() => setCurrentFormPage(currentFormPage - 1)}
                         />

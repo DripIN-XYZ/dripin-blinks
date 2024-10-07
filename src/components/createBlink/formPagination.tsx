@@ -8,11 +8,15 @@ export default function FormPagination(
     {
         currentFormPage,
         totalFormPage,
+        nextButtonDisabled,
+        backButtonDisabled,
         nextButtonOnClick,
         backButtonOnClick,
     }: {
-        currentFormPage: number,
         totalFormPage: number,
+        currentFormPage: number,
+        nextButtonDisabled: () => boolean,
+        backButtonDisabled: () => boolean,
         nextButtonOnClick: () => void,
         backButtonOnClick: () => void,
     }
@@ -42,7 +46,7 @@ export default function FormPagination(
                 <div className="pt-2 flex w-full gap-4 justify-end items-center max-lg:order-first">
                     <Button
                         variant="secondary"
-                        disabled={currentFormPage === 1}
+                        disabled={backButtonDisabled()}
                         onClick={backButtonOnClick}
                         className="border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm font-Andvari"
                     >
@@ -51,7 +55,7 @@ export default function FormPagination(
                     {currentFormPage === totalFormPage - 1 ? null : (
                         <Button
                             variant="default"
-                            disabled={currentFormPage === totalFormPage}
+                            disabled={nextButtonDisabled()}
                             onClick={nextButtonOnClick}
                             className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm font-Andvari"
                         >
