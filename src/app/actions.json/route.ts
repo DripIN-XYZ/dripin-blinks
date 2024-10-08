@@ -11,6 +11,10 @@ export const GET = async () => {
                 pathPattern: "/",
                 apiPath: "/api/buyNFT/**",
             },
+            {
+                pathPattern: "/",
+                apiPath: "/api/bidNFT/**",
+            },
         ],
     };
 

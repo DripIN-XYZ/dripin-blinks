@@ -10,15 +10,16 @@ import { Connection } from '@solana/web3.js';
 import { Input } from "@/components/ui/input";
 import ConnectWallet from "@/components/wallet";
 import { Button } from "@/components/ui/button";
-import { NewTwitterIcon } from "hugeicons-react";
 import Wrapper from "@/components/common/Wrapper";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { NewTwitterIcon, Loading03Icon } from "hugeicons-react";
 import FlickeringGrid from "@/components/magicui/flickering-grid";
 import FormPagination from "@/components/createBlink/formPagination";
 import { NextImageCollection, NextImageNft } from "@/components/NextImage";
 import ReviewListingAccordion from "@/components/createBlink/reviewListingAccordion";
 import searchAssets, { getSearchAssetsType, Collectible } from "@/lib/phantom/searchAssets";
+import PlaceNFTBid from "@/lib/tensor/Place_NFT_Bid";
 
 export default function CreateBlink() {
     const wallet = useWallet();
@@ -39,11 +40,13 @@ export default function CreateBlink() {
     const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
     const [auctionDuration, setAuctionDuration] = useState<number | null>(null);
 
+    const [trannsectionLodaing, setTrannsectionLodaing] = useState<boolean>(false);
+
     const [blinkLink, setBlinkLink] = useState<string | null>(null);
 
-    function hoursToMilliseconds(hours: number): number {
-        const millisecondsInAnHour = 60 * 60 * 1000; // 1 hour = 3,600,000 milliseconds
-        return hours * millisecondsInAnHour;
+    function secondsToHours(seconds: number): number {
+        const secondsInAnHour = 60 * 60;
+        return seconds / secondsInAnHour;
     }
 
     const handleConfettiClick = () => {
@@ -77,12 +80,14 @@ export default function CreateBlink() {
 
     const handleTransectionClick = async () => {
         try {
-
             if (!selectedNFTDetails) {
                 return;
             }
 
+
             if (selectedMode === "SELL_NFT") {
+                setTrannsectionLodaing(true);
+
                 const signedTransaction = await NFTList(
                     wallet,
                     {
@@ -98,8 +103,11 @@ export default function CreateBlink() {
                 console.log("======== signature ========", signature);
 
                 if (!signature) {
+                    setTrannsectionLodaing(false);
                     throw new Error("Transaction failed");
                 }
+
+                setTrannsectionLodaing(false);
 
                 const url = new URL(window.location.href);
                 const baseUrl = url.origin;
@@ -113,13 +121,15 @@ export default function CreateBlink() {
                     return;
                 }
 
-                const signedTransaction = await NFTList(
+                setTrannsectionLodaing(true);
+
+                const signedTransaction = await PlaceNFTBid(
                     wallet,
                     {
                         mint: selectedNFTDetails.chainData.mint,
                         owner: selectedNFTDetails.owner,
                         price: selectedPrice! * (10 ** 9),
-                        expireIn: hoursToMilliseconds(auctionDuration),
+                        expireIn: secondsToHours(auctionDuration),
                     });
 
                 console.log("======== signedTransaction ========", signedTransaction);
@@ -129,8 +139,11 @@ export default function CreateBlink() {
                 console.log("======== signature ========", signature);
 
                 if (!signature) {
+                    setTrannsectionLodaing(false);
                     throw new Error("Transaction failed");
                 }
+
+                setTrannsectionLodaing(false);
 
                 const url = new URL(window.location.href);
                 const baseUrl = url.origin;
@@ -140,9 +153,11 @@ export default function CreateBlink() {
                 setCurrentFormPage(currentFormPage + 1);
                 handleConfettiClick();
             } else {
+                setTrannsectionLodaing(false);
                 console.error("Invalid Mode");
             }
         } catch (error) {
+            setTrannsectionLodaing(false);
             console.error("An error occurred:", error);
         }
     };
@@ -442,7 +457,9 @@ export default function CreateBlink() {
                                 }}
                                 className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm font-Andvari"
                             >
-                                Confirm
+                                {
+                                    trannsectionLodaing ? <Loading03Icon className="animate-spin" /> : "Confirm"
+                                }
                             </Button>
                         </div>
                     </div>
@@ -450,23 +467,33 @@ export default function CreateBlink() {
 
             case 8:
                 return (
-                    <div className="h-full flex flex-col justify-center">
-                        <h1 className="text-5xl font-bold">Share Your Blink!</h1>
-                        <h2 className="pt-2 text-xl font-normal text-black">Spread the word about your exclusive Blink amongst everyone </h2>
-                        <div className="pt-5 flex gap-4 items-center">
-                            <Button
-                                variant="secondary"
-                                onClick={() => {
-                                    navigator.clipboard.writeText(blinkLink as string);
-                                }}
-                                className="border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm font-Andvari"
-                            >
-                                Copy Link
-                                {/* <NewTwitterIcon /> */}
-                            </Button>
-                            <p className="font-normal text-sm font-Andvari">share on x!</p>
+                    <div className="h-full flex flex-col justify-between">
+                        <div className="h-full flex flex-col justify-center">
+                            <h1 className="text-5xl font-bold">Share Your Blink!</h1>
+                            <h2 className="pt-2 text-xl font-normal text-black">Spread the word about your exclusive Blink amongst everyone </h2>
+                            <div className="pt-5 flex gap-4 items-center">
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(blinkLink as string);
+
+                                        const Xcontent = encodeURIComponent(`Kickstart your NFT trading journey with unmatched potential through @_DripIN !. 
+
+${blinkLink}
+`);
+
+                                        const XUrl = `https://twitter.com/intent/tweet?text=${Xcontent}`;
+                                        window.open(XUrl, '_blank');
+                                    }}
+                                    className="flex items-center gap-2 border-2 border-blue-600 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-800 text-sm font-Andvari"
+                                >
+                                    Share on
+                                    <NewTwitterIcon />
+                                </Button>
+                                {/* <p className="font-normal text-sm font-Andvari">share on x!</p> */}
+                            </div>
                         </div>
-                        <div className="pt-5 flex gap-4 items-center">
+                        <div className="pt-5 flex gap-4 items-center justify-end">
                             <Button
                                 onClick={() => {
                                     setSelectedCollectionAddress("");
