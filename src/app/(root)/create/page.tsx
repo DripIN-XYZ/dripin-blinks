@@ -6,7 +6,6 @@ import confetti from "canvas-confetti";
 import Header from "./_components/Header";
 import { useEffect, useState } from "react";
 import NFTList from "@/lib/tensor/NFT_List";
-import { Connection } from '@solana/web3.js';
 import { Input } from "@/components/ui/input";
 import ConnectWallet from "@/components/wallet";
 import { Button } from "@/components/ui/button";
@@ -16,10 +15,11 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { NewTwitterIcon, Loading03Icon } from "hugeicons-react";
 import FlickeringGrid from "@/components/magicui/flickering-grid";
 import FormPagination from "@/components/createBlink/formPagination";
+import { processAuctionDetail } from "@/lib/supabase/auctionDetails";
 import { NextImageCollection, NextImageNft } from "@/components/NextImage";
 import ReviewListingAccordion from "@/components/createBlink/reviewListingAccordion";
 import searchAssets, { getSearchAssetsType, Collectible } from "@/lib/phantom/searchAssets";
-import PlaceNFTBid from "@/lib/tensor/Place_NFT_Bid";
+import { Connection, Transaction, SystemProgram, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 
 export default function CreateBlink() {
     const wallet = useWallet();
@@ -40,13 +40,17 @@ export default function CreateBlink() {
     const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
     const [auctionDuration, setAuctionDuration] = useState<number | null>(null);
 
-    const [trannsectionLodaing, setTrannsectionLodaing] = useState<boolean>(false);
+    const [transactionLoading, setTransactionLoading] = useState<boolean>(false);
 
     const [blinkLink, setBlinkLink] = useState<string | null>(null);
 
-    function secondsToHours(seconds: number): number {
-        const secondsInAnHour = 60 * 60;
-        return seconds / secondsInAnHour;
+    function addHoursToCurrentUTC(hours: number): Date {
+        const currentUtcTime = new Date();
+        const newTime = new Date(currentUtcTime.getTime() + hours * 60 * 60 * 1000);
+
+        console.log("======== currentUtcTime ========", currentUtcTime);
+        console.log("======== newTime ========", newTime);
+        return newTime;
     }
 
     const handleConfettiClick = () => {
@@ -78,15 +82,15 @@ export default function CreateBlink() {
         }, 250);
     };
 
-    const handleTransectionClick = async () => {
+    const handleTransactionClick = async () => {
         try {
             if (!selectedNFTDetails) {
+                console.error("No NFT selected");
                 return;
             }
 
-
             if (selectedMode === "SELL_NFT") {
-                setTrannsectionLodaing(true);
+                setTransactionLoading(true);
 
                 const signedTransaction = await NFTList(
                     wallet,
@@ -98,16 +102,16 @@ export default function CreateBlink() {
 
                 console.log("======== signedTransaction ========", signedTransaction);
 
-                const connection = new Connection(process.env.NEXT_PUBLIC_SHYFT_RPC_URL!, "confirmed");
+                const connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC_URL!, "confirmed");
                 const signature = await connection.sendRawTransaction(signedTransaction.serialize());
                 console.log("======== signature ========", signature);
 
                 if (!signature) {
-                    setTrannsectionLodaing(false);
+                    setTransactionLoading(false);
                     throw new Error("Transaction failed");
                 }
 
-                setTrannsectionLodaing(false);
+                setTransactionLoading(false);
 
                 const url = new URL(window.location.href);
                 const baseUrl = url.origin;
@@ -117,47 +121,97 @@ export default function CreateBlink() {
                 setCurrentFormPage(currentFormPage + 1);
                 handleConfettiClick();
             } else if (selectedMode === "AUCTION_NFT") {
-                if (!auctionDuration) {
+                if (!auctionDuration || !selectedPrice || !publicKey) {
+                    console.error("Invalid auction details");
                     return;
                 }
 
-                setTrannsectionLodaing(true);
+                try {
+                    setTransactionLoading(true);
 
-                const signedTransaction = await PlaceNFTBid(
-                    wallet,
-                    {
-                        mint: selectedNFTDetails.chainData.mint,
-                        owner: selectedNFTDetails.owner,
-                        price: selectedPrice! * (10 ** 9),
-                        expireIn: secondsToHours(auctionDuration),
+                    const connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC_URL!, "confirmed");
+
+                    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+
+                    console.log("======== lamports ========", selectedPrice * LAMPORTS_PER_SOL * 0.01);
+
+                    const lamports = Math.floor(selectedPrice * LAMPORTS_PER_SOL * 0.01);
+
+                    // Create a new transaction
+                    const transaction = new Transaction({
+                        recentBlockhash: blockhash,
+                        feePayer: publicKey,
+                    }).add(
+                        SystemProgram.transfer({
+                            fromPubkey: publicKey,
+                            toPubkey: new PublicKey("8f1Ved515mW6CrbQhzVceNsWUijVYeFPK6siuxvLveMP"),
+                            lamports: lamports,
+                        })
+                    );
+
+                    let signature;
+
+                    if (wallet?.signTransaction) {
+                        const signedTransaction = await wallet.signTransaction(transaction);
+
+                        console.log("======== signedTransaction ========", signedTransaction);
+
+                        signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
+                            skipPreflight: false,
+                            preflightCommitment: "confirmed",
+                        });
+
+                        const confirmation = await connection.confirmTransaction(
+                            { signature, lastValidBlockHeight, blockhash },
+                            "confirmed"
+                        );
+
+                        if (confirmation.value.err) {
+                            throw new Error("Transaction confirmation failed");
+                        }
+
+                        console.log("Transaction successful! Signature:", signature);
+                    } else {
+                        throw new Error("signTransaction is undefined");
+                    }
+
+                    if (!signature) {
+                        throw new Error("Transaction failed");
+                    }
+
+                    // Process auction details
+                    const loadData = processAuctionDetail(publicKey.toString(), "insert", {
+                        lamports: selectedPrice * LAMPORTS_PER_SOL,
+                        mint_address: selectedNFTDetails.chainData.mint,
+                        expiry_time: addHoursToCurrentUTC(auctionDuration),
                     });
 
-                console.log("======== signedTransaction ========", signedTransaction);
+                    console.log("======== loadData ========", loadData);
 
-                const connection = new Connection(process.env.NEXT_PUBLIC_SHYFT_RPC_URL!, "confirmed");
-                const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-                console.log("======== signature ========", signature);
+                    if (!loadData) {
+                        throw new Error("Auction detail processing failed");
+                    }
 
-                if (!signature) {
-                    setTrannsectionLodaing(false);
-                    throw new Error("Transaction failed");
+                    // Generate the Blink link
+                    const url = new URL(window.location.href);
+                    const baseUrl = url.origin;
+                    setBlinkLink(`https://dial.to/?action=solana-action:${baseUrl}/api/bidNFT/${selectedNFTDetails.chainData.mint}`);
+
+                    // Move to the next form page and trigger confetti animation
+                    setCurrentFormPage(currentFormPage + 1);
+                    handleConfettiClick();
+                } catch (error) {
+                    console.error("Transaction error:", error);
+                } finally {
+                    // Ensure loading state is reset
+                    setTransactionLoading(false);
                 }
-
-                setTrannsectionLodaing(false);
-
-                const url = new URL(window.location.href);
-                const baseUrl = url.origin;
-
-                setBlinkLink(`https://dial.to/?action=solana-action:${baseUrl}/api/bidNFT/${selectedNFTDetails.chainData.mint}`);
-
-                setCurrentFormPage(currentFormPage + 1);
-                handleConfettiClick();
             } else {
-                setTrannsectionLodaing(false);
+                setTransactionLoading(false);
                 console.error("Invalid Mode");
             }
         } catch (error) {
-            setTrannsectionLodaing(false);
+            setTransactionLoading(false);
             console.error("An error occurred:", error);
         }
     };
@@ -453,12 +507,12 @@ export default function CreateBlink() {
                             <Button
                                 variant="default"
                                 onClick={() => {
-                                    handleTransectionClick();
+                                    handleTransactionClick();
                                 }}
                                 className="bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-800 text-sm font-Andvari"
                             >
                                 {
-                                    trannsectionLodaing ? <Loading03Icon className="animate-spin" /> : "Confirm"
+                                    transactionLoading ? <Loading03Icon className="animate-spin" /> : "Confirm"
                                 }
                             </Button>
                         </div>

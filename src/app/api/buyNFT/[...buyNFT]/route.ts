@@ -237,7 +237,7 @@ export async function POST(request: Request) {
         return new Response("NFT not found", { status: 404 });
     }
 
-    const connection = new Connection(process.env.NEXT_PUBLIC_SHYFT_RPC_URL!, "confirmed");
+    const connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC_URL!, "confirmed");
     const blockhash = await connection.getLatestBlockhash();
 
     console.log("Buy NFT Data: ", buyerAddress, nftMintAddress, nftData.owner, parseInt(nftData.listing.price), blockhash.blockhash);

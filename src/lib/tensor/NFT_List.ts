@@ -53,7 +53,7 @@ export default async function NFTList(
     }: NFTListType): Promise<Transaction> {
     const baseURL: string = "/api/tensor/list";
 
-    const connection = new Connection(process.env.NEXT_PUBLIC_SHYFT_RPC_URL!, "confirmed");
+    const connection = new Connection(process.env.NEXT_PUBLIC_HELIUS_RPC_URL!, "confirmed");
     const blockhash = await connection.getLatestBlockhash();
 
     const params = new URLSearchParams({
